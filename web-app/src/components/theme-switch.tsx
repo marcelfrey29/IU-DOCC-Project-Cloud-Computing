@@ -1,9 +1,10 @@
-import { SwitchProps, useSwitch } from "@nextui-org/switch";
+import { type SwitchProps, useSwitch } from "@nextui-org/switch";
 import { VisuallyHidden } from "@react-aria/visually-hidden";
 import clsx from "clsx";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 
 import { useTheme } from "@/hooks/use-theme";
+import { BootstrapIcon } from "./icons";
 
 export interface ThemeSwitchProps {
     className?: string;
@@ -74,7 +75,11 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({
                     ),
                 })}
             >
-                {!isSelected ? <p>Light</p> : <p>Dark</p>}
+                {isSelected ? (
+                    <BootstrapIcon name="moon-fill"></BootstrapIcon>
+                ) : (
+                    <BootstrapIcon name="brightness-high-fill"></BootstrapIcon>
+                )}
             </div>
         </Component>
     );
