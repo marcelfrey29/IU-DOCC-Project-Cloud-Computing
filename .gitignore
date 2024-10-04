@@ -131,3 +131,7 @@ dist
 
 # Draw.io
 *.bkp
+
+# macOS
+.DS_Store
+._*
