@@ -18,7 +18,7 @@ updates:
       - "area: ci"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "./web-app"
     schedule:
       interval: "weekly"
     commit-message:
@@ -30,7 +30,7 @@ updates:
       - "area: node"
 
   - package-ecosystem: "gomod"
-    directory: "/"
+    directory: "./backend"
     schedule:
       interval: "weekly"
     commit-message:
