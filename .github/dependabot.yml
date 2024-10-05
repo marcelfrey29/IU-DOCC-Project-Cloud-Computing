@@ -18,7 +18,7 @@ updates:
       - "area: ci"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "./web-app"
     schedule:
       interval: "weekly"
     commit-message:
@@ -28,3 +28,15 @@ updates:
     labels:
       - "area: dependencies"
       - "area: node"
+
+  - package-ecosystem: "gomod"
+    directory: "./backend"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "area: dependencies"
+      - "area: go"
