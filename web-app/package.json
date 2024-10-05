@@ -27,7 +27,7 @@
         "@nextui-org/switch": "2.0.34",
         "@nextui-org/system": "2.2.6",
         "@nextui-org/theme": "2.2.11",
-        "@react-aria/visually-hidden": "3.8.12",
+        "@react-aria/visually-hidden": "3.8.16",
         "clsx": "2.1.1",
         "framer-motion": "~11.11.1",
         "react": "18.3.1",
