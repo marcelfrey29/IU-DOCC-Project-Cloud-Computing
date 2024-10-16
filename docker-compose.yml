@@ -1,0 +1,23 @@
+services:
+  webapp:
+    container_name: iu-project-cc-webapp
+    build: "./web-app"
+    ports:
+      - "8080:80"
+  
+  backend:
+    container_name: iu-project-cc-backend
+    build: "./backend"
+    depends_on:
+      - database
+    ports:
+      - "9090:3000"
+  
+  database:
+    container_name: iu-project-cc-dynamodb
+    image: "amazon/dynamodb-local:2.5.2"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./.storage/dynamodb/data:/home/dynamodblocal/data"
