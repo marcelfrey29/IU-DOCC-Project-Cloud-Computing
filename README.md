@@ -2,10 +2,18 @@
 
 [![Node.js CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-node.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-node.yml)
 [![Go CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml)
+[![SAST](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml/badge.svg)](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml)
 
 ## Documentation
 
 See [Docs](docs/docs.md)
+
+## Requirements
+
+- Current Node.js LTS (Node.js 22)
+- Golang >= 1.23.0
+- [Bearer CLI](https://github.com/Bearer/bearer) must be installed for Security Scanning (SAST)
+    - Run SAST with `bearer scan .` in project root
 
 ## Running the Project
 
