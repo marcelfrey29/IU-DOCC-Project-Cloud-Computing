@@ -23,6 +23,8 @@ See [Docs](docs/docs.md)
     ```
 - [Bearer CLI](https://github.com/Bearer/bearer) must be installed for Security Scanning (SAST)
     - Run SAST with `bearer scan .` in project root
+- [Bruno](https://www.usebruno.com/) (Optional) as HTTP Client
+    - Collection with Assertions is located in `tools/bruno`
 
 ## Running the Project
 
