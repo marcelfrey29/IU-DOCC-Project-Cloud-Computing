@@ -3,9 +3,9 @@
 aws dynamodb create-table \
     --table-name TravelGuides \
     --attribute-definitions \
-        AttributeName=Id,AttributeType=S \
+        AttributeName=id,AttributeType=S \
     --key-schema \
-        AttributeName=Id,KeyType=HASH \
+        AttributeName=id,KeyType=HASH \
     --provisioned-throughput \
         ReadCapacityUnits=5,WriteCapacityUnits=5 \
     --table-class STANDARD \
