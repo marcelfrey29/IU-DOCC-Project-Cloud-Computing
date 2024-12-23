@@ -12,6 +12,15 @@ See [Docs](docs/docs.md)
 
 - Current Node.js LTS (Node.js 22)
 - Golang >= 1.23.0
+- Docker (incl. Docker Compose)
+- AWS CLI must be installed and configured
+    - For local execution (e.g. DynamoDB Local) Dummy-Access-Keys can be used
+    ```conf
+    # ~/.aws/credentials
+    [default]
+    aws_access_key_id = XXXXX
+    aws_secret_access_key = XXXXX
+    ```
 - [Bearer CLI](https://github.com/Bearer/bearer) must be installed for Security Scanning (SAST)
     - Run SAST with `bearer scan .` in project root
 
@@ -38,4 +47,29 @@ docker compose start
 # Get logs when running in detached mode
 # docker logs <container_name>
 docker logs iu-project-cc-backend
+```
+
+### Initial Setup of DynamoDB Local
+
+When the DynamoDB Local Container started for the first time, we need to create a Table manually (just like we have to when using real AWS infrastructure).
+To perform this task, the `tools/create-local-table.sh` script can be used. 
+
+> [!IMPORTANT]
+> DynamoDB Local must be running (Run `docker compose up`).
+
+```bash
+# Create Table
+./tools/create-local-table.sh
+
+# Verify Table Creation
+aws dynamodb list-tables --endpoint-url http://localhost:8000
+```
+
+Expected Output: 
+```json
+{
+    "TableNames": [
+        "TravelGuides"
+    ]
+}
 ```
