@@ -21,7 +21,8 @@ updates:
     directories:
       - "./web-app"
       - "./backend"
-      - "/"
+      - "./dynamodb-local"
+      - "./"
     schedule:
       interval: "weekly"
     commit-message:

@@ -15,7 +15,7 @@ services:
   
   database:
     container_name: iu-project-cc-dynamodb
-    image: "amazon/dynamodb-local:2.5.2"
+    build: "./dynamodb-local"
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     ports:
       - "8000:8000"
