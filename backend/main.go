@@ -1,12 +1,16 @@
 package main
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 )
 
+var validate *validator.Validate
+
 func main() {
+	validate = validator.New(validator.WithRequiredStructEnabled())
 	app := fiber.New()
 
 	app.Get("/", func(c *fiber.Ctx) error {
@@ -20,6 +24,12 @@ func main() {
 		if err != nil {
 			log.Error("Error while parsing body.")
 		}
+
+		if validationErr := validate.Struct(data); validationErr != nil {
+			log.Error("Invalid Request Data.", validationErr.Error())
+			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
+		}
+
 		data.Id = uuid.NewString()
 		log.Info("Creating a new Travel Guide.", data)
 

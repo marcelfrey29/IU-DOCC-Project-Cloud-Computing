@@ -3,9 +3,9 @@ package main
 // A Travel Guide is a collection of activities and attractions at a specific location.
 type TravelGuide struct {
 	Id          string   `json:"id" dynamodbav:"id"`
-	Name        string   `json:"name" dynamodbav:"name"`
-	Private     bool     `json:"isPrivate" dynamodbav:"private"`
-	Secret      string   `json:"secret" dynamodbav:"secret"`
+	Name        string   `json:"name" dynamodbav:"name" validate:"required"`
+	Private     bool     `json:"isPrivate" dynamodbav:"isPrivate"`
+	Secret      string   `json:"secret" dynamodbav:"secret" validate:"required,min=8"`
 	Description string   `json:"description" dynamodbav:"description"`
 	Location    Location `json:"location" dynamodbav:"location"`
 	Category    Category `json:"category" dynamodbav:"category"`
@@ -24,7 +24,7 @@ const (
 type Location struct {
 	Street  string `json:"street" dynamodbav:"street"`
 	Zip     string `json:"zip" dynamodbav:"zip"`
-	City    string `json:"city" dynamodbav:"city"`
+	City    string `json:"city" dynamodbav:"city" validate:"required"`
 	State   string `json:"state" dynamodbav:"state"`
-	Country string `json:"country" dynamodbav:"country"`
+	Country string `json:"country" dynamodbav:"country" validate:"required"`
 }
