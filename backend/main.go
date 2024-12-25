@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var validate *validator.Validate
@@ -19,7 +20,7 @@ func main() {
 
 	// Create a new Travel Guide
 	app.Post("/travel-guides", func(c *fiber.Ctx) error {
-		data := new(TravelGuide)
+		data := new(CreateTravelGuideRequest)
 		err := c.BodyParser(data)
 		if err != nil {
 			log.Error("Error while parsing body.")
@@ -30,10 +31,7 @@ func main() {
 			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
 		}
 
-		data.Id = uuid.NewString()
-		log.Info("Creating a new Travel Guide.", data)
-
-		travelGuide, err := CreateTravelGuide(data)
+		travelGuide, _, err := createTravelGuide(data)
 		if err != nil {
 			return c.Status(500).JSON(map[string]string{"message": "Error while creating Travel Guide."})
 		}
@@ -46,4 +44,26 @@ func main() {
 	})
 
 	app.Listen(":3000")
+}
+
+func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, string, error) {
+	id := "TG#" + uuid.NewString()
+	secret, _ := bcrypt.GenerateFromPassword([]byte(travelGuide.Secret), bcrypt.DefaultCost)
+	travelGuide.TravelGuide.Id = id
+	tgi := TravelGuideItem{
+		Id:          id,
+		Secret:      string(secret),
+		TravelGuide: travelGuide.TravelGuide,
+	}
+	log.Info("Creating a new Travel Guide.", tgi.TravelGuide)
+
+	item, err := CreateTravelGuideInDDB(&tgi)
+	if err != nil {
+		log.Error("Error while creating Travel Guide.", error.Error)
+		return TravelGuide{}, "", err
+	}
+
+	tg := item.TravelGuide
+	log.Info("Created Travel Guide.", tg)
+	return tg, item.Secret, nil
 }

@@ -16,18 +16,20 @@ headers {
 
 body:json {
   {
-    "name": "Paris",
-    "isPrivate": false,
-    "secret": "paris2025",
-    "description": "The main attractions of Paris",
-    "category": 0,
-    "location": {
-      "street": "",
-      "zip": "",
-      "city": "Paris",
-      "state": "",
-      "country": "France"
-    }
+    "travelGuide": {
+      "name": "Paris",
+      "description": "The main attractions of Paris",
+      "isPrivate": false,
+      "category": 0,
+      "location": {
+        "street": "",
+        "zip": "",
+        "city": "Paris",
+        "state": "",
+        "country": "France"
+      }
+    },
+    "secret": "ParisTrip2025"
   }
 }
 
@@ -35,5 +37,8 @@ assert {
   res.status: eq 201
   res.body.id: isDefined
   res.body.name: eq Paris
-  res.body.country: eq France
+  res.body.location.country: eq France
+  res.body.secret: isUndefined
+  res.body.id: isDefined
+  res.body.id: isString 
 }
