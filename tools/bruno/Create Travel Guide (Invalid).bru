@@ -1,0 +1,36 @@
+meta {
+  name: Create Travel Guide (Invalid)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/travel-guides
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "travelGuide": {
+      "description": "The main attractions of Paris",
+      "isPrivate": false,
+      "category": 0,
+      "location": {
+        "street": "",
+        "zip": "",
+        "city": "Paris",
+        "state": ""
+      }
+    },
+    "secret": "ParisTrip2025"
+  }
+}
+
+assert {
+  res.status: eq 400
+}
