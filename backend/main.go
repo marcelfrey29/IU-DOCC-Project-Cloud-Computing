@@ -4,6 +4,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -13,6 +14,7 @@ var validate *validator.Validate
 func main() {
 	validate = validator.New(validator.WithRequiredStructEnabled())
 	app := fiber.New()
+	app.Use(cors.New())
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
