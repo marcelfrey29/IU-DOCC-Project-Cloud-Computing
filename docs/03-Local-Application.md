@@ -51,3 +51,10 @@ The web application, backend, and database are running in seperate Docker Contai
 Persistent storage is only needed for the database container.
 Locally, all applications are running on the same Docker Host.
 There is no redundancy or load balancing.
+
+## UI Design
+
+Simple mockups for the User Interface.
+
+![Mockups of the Web App](assets/web-app-mockup.svg)
+
