@@ -20,6 +20,16 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
+	// Get Travel Guides
+	app.Get("/travel-guides", func(c *fiber.Ctx) error {
+		tgs, err := getTravelGuides()
+		if err != nil {
+			log.Error("Error while getting Travel Guides.", err.Error())
+			c.Status(500).JSON(map[string]string{"message": "Error while getting Travel Guides."})
+		}
+		return c.Status(200).JSON(tgs)
+	})
+
 	// Create a new Travel Guide
 	app.Post("/travel-guides", func(c *fiber.Ctx) error {
 		data := new(CreateTravelGuideRequest)
@@ -48,6 +58,39 @@ func main() {
 	app.Listen(":3000")
 }
 
+// Get all Travel Guides.
+//
+// For private Travel Guides, all information (except the name) are removed.
+func getTravelGuides() ([]TravelGuide, error) {
+	log.Info("Get all Travel Guides.")
+	items, err := GetTravelGuidesFromDDB()
+
+	if err != nil {
+		log.Error("Error while getting Travel Guides.", error.Error)
+		return nil, err
+	}
+
+	// Travel Guide Items must be transformed to Travel Guides.
+	// In addition, information in private Travel Guides must be removed.
+	var travelGuides []TravelGuide
+	for _, item := range items {
+		if item.TravelGuide.Private {
+			log.Debug("Travel Guide is Private, hiding all private information.", item.HashId, item.RangeId)
+			privateTravelGuide := new(TravelGuide)
+			privateTravelGuide.Private = true
+			privateTravelGuide.Name = item.TravelGuide.Name
+			travelGuides = append(travelGuides, *privateTravelGuide)
+		} else {
+			log.Debug("Travel Guide is Public, returning.", item.HashId, item.RangeId)
+			travelGuides = append(travelGuides, item.TravelGuide)
+		}
+	}
+	log.Info("Got all Travel Guides.", len(travelGuides))
+
+	return travelGuides, nil
+}
+
+// Create a new Travel Guide.
 func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, string, error) {
 	id := "TG_" + uuid.NewString()
 	secret, _ := bcrypt.GenerateFromPassword([]byte(travelGuide.Secret), bcrypt.DefaultCost)

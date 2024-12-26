@@ -1,7 +1,7 @@
 meta {
   name: Create Travel Guide
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -40,5 +40,5 @@ assert {
   res.body.location.country: eq France
   res.body.secret: isUndefined
   res.body.id: isDefined
-  res.body.id: isString 
+  res.body.id: isString
 }
