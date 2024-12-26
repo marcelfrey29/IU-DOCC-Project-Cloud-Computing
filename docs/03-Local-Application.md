@@ -51,3 +51,46 @@ The web application, backend, and database are running in seperate Docker Contai
 Persistent storage is only needed for the database container.
 Locally, all applications are running on the same Docker Host.
 There is no redundancy or load balancing.
+
+## NoSQL Design (DynamoDB)
+
+NoSQL Databases are very scalable and extremely fast in querying when the partition and range keys are used. 
+However, this limits how data can be queried.
+Therefore, we must understand which data needs to be queried.
+
+Looking at our requirements, we can identify a few access patterns:
+
+1. Get all Travel Guides
+    - [Issue #8](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/issues/8)
+1. Get all Activities of a Travel Guide
+    - [Issue #7](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/issues/7)
+1. Get a single Travel Guide
+    - [Issue #7](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/issues/7)
+
+With this query requirements in mind, we can design the data model (Table).
+
+![Table Design](assets/table-design.svg)
+
+1. Get all Travel Guides
+    - Query with `Hash="TG"`
+1. Get all Activities of a Travel Guide
+    - Query with `Hash="ACT#<TG_<tg-id>"` (Travel Guide ID with `ACT#` Prefix)
+1. Get a single Travel Guide
+    - Get with `Hash="TG"` and `Range="TG_<tg-id>"` (ID of Travel Guide)
+
+> [!danger]
+> **The way Travel Guides are stored increases the risk of a Hot Partition** because the Hash-Key is always `TG` which means there is no distribution across partitions.
+>
+> However, there will me way more Activities than Travel Guides because each Travel Guide consits of multiple Activities. 
+> Activities are well distributed across partitions so there is no risk of hot partitions. 
+>
+> Without `TG` as Hash Key, we would need to use the `Scan` operation which is really expensive and should be avoided.
+>
+> I decided to go with this solution because the risk of a hot partition is way lower than the risk of the cost- and performance impact when using `Scan`. 
+
+## UI Design
+
+Simple mockups for the User Interface.
+
+![Mockups of the Web App](assets/web-app-mockup.svg)
+

@@ -32,7 +32,7 @@ var ddbClient = dynamodb.NewFromConfig(getAwsConfig())
 
 // Create a new Travel Guide in the Database
 func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {
-	log.Info("Creating new Travel Guide in DynamoDB.", travelGuide.Id, travelGuide.TravelGuide)
+	log.Info("Creating new Travel Guide in DynamoDB.", travelGuide.HashId, travelGuide.RangeId, travelGuide.TravelGuide)
 
 	itemToStore, _ := attributevalue.MarshalMap(travelGuide)
 
@@ -46,6 +46,6 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 		return nil, err
 	}
 
-	log.Info("Created Travel Guide in DyanmoDB.", travelGuide.Id)
+	log.Info("Created Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
 	return travelGuide, nil
 }
