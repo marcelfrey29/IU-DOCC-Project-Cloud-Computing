@@ -12,7 +12,8 @@ type TravelGuide struct {
 
 // DynamoDB Item Representation of a Travel Guide.
 type TravelGuideItem struct {
-	Id          string      `dynamodbav:"id"`
+	HashId      string      `dynamodbav:"hashId"`
+	RangeId     string      `dynamodbav:"rangeId"`
 	Secret      string      `dynamodbav:"secret"`
 	TravelGuide TravelGuide `dynamodbav:"travelGuide"`
 }

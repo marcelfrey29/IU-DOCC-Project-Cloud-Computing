@@ -49,11 +49,12 @@ func main() {
 }
 
 func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, string, error) {
-	id := "TG#" + uuid.NewString()
+	id := "TG_" + uuid.NewString()
 	secret, _ := bcrypt.GenerateFromPassword([]byte(travelGuide.Secret), bcrypt.DefaultCost)
 	travelGuide.TravelGuide.Id = id
 	tgi := TravelGuideItem{
-		Id:          id,
+		HashId:      "TG",
+		RangeId:     id,
 		Secret:      string(secret),
 		TravelGuide: travelGuide.TravelGuide,
 	}
