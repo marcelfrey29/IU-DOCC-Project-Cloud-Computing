@@ -46,3 +46,17 @@ export async function createTravelGuide(
     const body = await response.json();
     return body;
 }
+
+export async function getTravelGuides(): Promise<TravelGuide[]> {
+    const response = await fetch("http://localhost:9090/travel-guides", {
+        method: "GET",
+        headers: new Headers({
+            "content-type": "application/json",
+        }),
+    });
+    if (response.status !== 200) {
+        throw new Error();
+    }
+    const body = await response.json();
+    return body;
+}
