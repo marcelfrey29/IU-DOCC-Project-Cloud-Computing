@@ -79,6 +79,7 @@ func getTravelGuides() ([]TravelGuide, error) {
 			privateTravelGuide := new(TravelGuide)
 			privateTravelGuide.Private = true
 			privateTravelGuide.Name = item.TravelGuide.Name
+			privateTravelGuide.Id = item.TravelGuide.Id
 			travelGuides = append(travelGuides, *privateTravelGuide)
 		} else {
 			log.Debug("Travel Guide is Public, returning.", item.HashId, item.RangeId)
