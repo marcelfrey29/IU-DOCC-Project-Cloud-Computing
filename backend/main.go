@@ -80,7 +80,7 @@ func main() {
 		auth := c.Get("x-tg-secret")
 
 		// Get the Travel Guide and check the secret value
-		_, err := getTravelGuide(id, auth)
+		err := deleteTravelGuide(id, auth)
 		var unauthorizedError *UnauthorizedError
 		var notFoundError *NotFoundError
 		if errors.As(err, &unauthorizedError) {
@@ -92,17 +92,10 @@ func main() {
 			log.Info("Travel Guide with the given ID doesn't exist: Already in expected state (Deleted).", id)
 			return c.Status(200).JSON(map[string]string{"message": "Success."})
 		} else if err != nil {
-			log.Error("Error while getting a Travel Guide.", err.Error())
-			return c.Status(500).JSON(map[string]string{"message": "Error while getting the Travel Guide."})
+			log.Error("Error while deleting Travel Guide.", err.Error())
+			return c.Status(500).JSON(map[string]string{"message": "Error while deleting the Travel Guide."})
 		}
 
-		// Delete Travel Guide
-		log.Debug("Got Travel Guide and the User has Permissions, deleting...")
-		err = DeleteGuideFromDDB(id)
-		if err != nil {
-			log.Error("Error while deleting Travel Guide.", err.Error())
-			return c.Status(500).JSON(map[string]string{"message": "Error while deleting Travel Guide."})
-		}
 		return c.Status(200).JSON(map[string]string{"message": "Success."})
 	})
 
@@ -191,6 +184,33 @@ func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, stri
 	tg := item.TravelGuide
 	log.Info("Created Travel Guide.", tg)
 	return tg, item.Secret, nil
+}
+
+// Delete a Travel Guide by ID.
+func deleteTravelGuide(id string, secret string) error {
+	// Get Travel Guide
+	item, err := GetTravelGuideFromDDB(id)
+	if err != nil {
+		log.Error("Error while getting Travel Guide.", error.Error)
+		return err
+	}
+	log.Debug("Got Travel Guide from DynamoDB, performing additional checks.", item.HashId, item.RangeId)
+
+	// Check Secret
+	err = bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
+	if err != nil {
+		log.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
+		return &UnauthorizedError{message: "The secret is not valid."}
+	}
+
+	// Delete
+	err = DeleteGuideFromDDB(id)
+	if err != nil {
+		log.Error("Error while deleting Travel Guide.", err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func getBcrypSecretFromPlaintext(secret string) string {
