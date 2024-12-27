@@ -8,7 +8,7 @@ type NotFoundError struct {
 }
 
 func (e *NotFoundError) Error() string {
-	return fmt.Sprintf("%d - %s", e.message)
+	return fmt.Sprintf("%s", e.message)
 }
 
 // Error if the requesting user doesn't have access to a Travel Guide.
@@ -17,5 +17,5 @@ type UnauthorizedError struct {
 }
 
 func (e *UnauthorizedError) Error() string {
-	return fmt.Sprintf("%d - %s", e.message)
+	return fmt.Sprintf("%s", e.message)
 }
