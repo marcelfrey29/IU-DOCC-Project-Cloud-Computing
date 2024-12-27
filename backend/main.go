@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -25,9 +27,30 @@ func main() {
 		tgs, err := getTravelGuides()
 		if err != nil {
 			log.Error("Error while getting Travel Guides.", err.Error())
-			c.Status(500).JSON(map[string]string{"message": "Error while getting Travel Guides."})
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting Travel Guides."})
 		}
 		return c.Status(200).JSON(tgs)
+	})
+
+	// Get a Travel Guide
+	app.Get("/travel-guides/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		auth := c.Get("x-tg-secret")
+
+		travelGuide, err := getTravelGuide(id, auth)
+		var unauthorizedError *UnauthorizedError
+		var notFoundError *NotFoundError
+		if errors.As(err, &unauthorizedError) {
+			log.Error("The Secret is not valid.", err.Error())
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		} else if errors.As(err, &notFoundError) {
+			log.Error("Travel Guide with the given ID doesn't exist.", id)
+			return c.Status(404).JSON(map[string]string{"message": "Travel Guide doesn't exist."})
+		} else if err != nil {
+			log.Error("Error while getting a Travel Guide.", err.Error())
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting the Travel Guide."})
+		}
+		return c.Status(200).JSON(travelGuide)
 	})
 
 	// Create a new Travel Guide
@@ -91,15 +114,38 @@ func getTravelGuides() ([]TravelGuide, error) {
 	return travelGuides, nil
 }
 
+// Get a single Travel Guide by ID.
+func getTravelGuide(id string, secret string) (TravelGuide, error) {
+	item, err := GetTravelGuideFromDDB(id)
+	if err != nil {
+		log.Error("Error while getting Travel Guide.", error.Error)
+		return TravelGuide{}, err
+	}
+
+	travelGuide := item.TravelGuide
+	log.Debug("Got Travel Guide from DynamoDB, performing additional checks.", travelGuide)
+	if travelGuide.Private {
+		log.Debug("Travel Guide is  Private, checking Secret.")
+
+		err := bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
+		if err != nil {
+			log.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
+			return travelGuide, &UnauthorizedError{message: "The secret is not valid."}
+		}
+	}
+
+	return item.TravelGuide, nil
+}
+
 // Create a new Travel Guide.
 func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, string, error) {
 	id := "TG_" + uuid.NewString()
-	secret, _ := bcrypt.GenerateFromPassword([]byte(travelGuide.Secret), bcrypt.DefaultCost)
+	secret := getBcrypSecretFromPlaintext(travelGuide.Secret)
 	travelGuide.TravelGuide.Id = id
 	tgi := TravelGuideItem{
 		HashId:      "TG",
 		RangeId:     id,
-		Secret:      string(secret),
+		Secret:      secret,
 		TravelGuide: travelGuide.TravelGuide,
 	}
 	log.Info("Creating a new Travel Guide.", tgi.TravelGuide)
@@ -113,4 +159,9 @@ func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, stri
 	tg := item.TravelGuide
 	log.Info("Created Travel Guide.", tg)
 	return tg, item.Secret, nil
+}
+
+func getBcrypSecretFromPlaintext(secret string) string {
+	encryptedSecret, _ := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
+	return string(encryptedSecret)
 }

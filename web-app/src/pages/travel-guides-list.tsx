@@ -132,6 +132,7 @@ export default function TravelGuidesListPage() {
                     own.
                 </p>
                 <Button className="mt-3" color="primary" onPress={onOpen}>
+                    <BootstrapIcon name="plus-circle-fill"></BootstrapIcon>
                     Create Travel Guide
                 </Button>
 
@@ -320,12 +321,14 @@ export default function TravelGuidesListPage() {
                                                 onPress={onClose}
                                                 className="mr-2"
                                             >
+                                                <BootstrapIcon name="x-circle-fill"></BootstrapIcon>
                                                 Cancel
                                             </Button>
                                             <Button
                                                 color="primary"
                                                 type="submit"
                                             >
+                                                <BootstrapIcon name="check-circle-fill"></BootstrapIcon>
                                                 Create Travel Guide
                                             </Button>
                                         </div>

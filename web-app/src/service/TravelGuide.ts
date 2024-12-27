@@ -60,3 +60,32 @@ export async function getTravelGuides(): Promise<TravelGuide[]> {
     const body = await response.json();
     return body;
 }
+
+export async function getTravelGuideById(
+    id: string,
+    secret?: string,
+): Promise<TravelGuide | null> {
+    const response = await fetch("http://localhost:9090/travel-guides/" + id, {
+        method: "GET",
+        headers: new Headers({
+            "content-type": "application/json",
+            ...(secret !== undefined ? { "x-tg-secret": secret } : {}),
+        }),
+    });
+    if (response.status === 404) {
+        return null;
+    }
+    if (response.status === 401) {
+        throw new UnauthorizedError();
+    }
+    if (response.status !== 200) {
+        throw new Error();
+    }
+    const body = await response.json();
+    return body;
+}
+
+/**
+ * Error if the user is not authorized to access a resource.
+ */
+export class UnauthorizedError extends Error {}

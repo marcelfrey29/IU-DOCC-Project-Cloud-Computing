@@ -1,0 +1,30 @@
+meta {
+  name: Get Travel Guides by ID (Public)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/travel-guides/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{id}}
+}
+
+headers {
+  content-type: application/json
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: isDefined
+  res.body.name: eq Paris
+  res.body.location.country: eq France
+  res.body.secret: isUndefined
+  res.body.id: isDefined
+  res.body.id: isString
+  res.body.isPrivate: isFalsy
+}
