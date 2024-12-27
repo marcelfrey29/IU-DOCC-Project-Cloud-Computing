@@ -85,6 +85,25 @@ export async function getTravelGuideById(
     return body;
 }
 
+export async function deleteTravelGuideById(
+    id: string,
+    secret: string,
+): Promise<void> {
+    const response = await fetch("http://localhost:9090/travel-guides/" + id, {
+        method: "DELETE",
+        headers: new Headers({
+            "content-type": "application/json",
+            "x-tg-secret": secret,
+        }),
+    });
+    if (response.status === 401) {
+        throw new UnauthorizedError();
+    }
+    if (response.status !== 200) {
+        throw new Error();
+    }
+}
+
 /**
  * Error if the user is not authorized to access a resource.
  */

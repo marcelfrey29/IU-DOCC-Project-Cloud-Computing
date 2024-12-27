@@ -1,10 +1,10 @@
 meta {
-  name: Get Travel Guides by ID (Unauthorized)
+  name: Delete Travel Guides by ID (Public, Unauthorized)
   type: http
-  seq: 6
+  seq: 3
 }
 
-get {
+delete {
   url: {{baseUrl}}/travel-guides/:id
   body: none
   auth: none
@@ -16,7 +16,6 @@ params:path {
 
 headers {
   content-type: application/json
-  x-tg-secret: invalid-secret
 }
 
 assert {

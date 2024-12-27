@@ -1,17 +1,31 @@
 import { BootstrapIcon } from "@/components/icons";
 import DefaultLayout from "@/layouts/default";
-import { getTravelGuideById, TravelGuide } from "@/service/TravelGuide";
+import {
+    deleteTravelGuideById,
+    getTravelGuideById,
+    TravelGuide,
+} from "@/service/TravelGuide";
+import { Alert } from "@nextui-org/alert";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
+import {
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalHeader,
+    useDisclosure,
+} from "@nextui-org/modal";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export default function TravelGuideDetailPage() {
     let { id } = useParams();
     const routeTo = useNavigate();
+    const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [travelGuide, setTravelGuide] = useState(null as TravelGuide | null);
     const [authRequited, setAuthRequired] = useState(true);
+    const [deleteError, setDeleteError] = useState(false);
     const [secret, setSecret] = useState("");
 
     const getTravelGuideData = async () => {
@@ -26,6 +40,18 @@ export default function TravelGuideDetailPage() {
     useEffect(() => {
         getTravelGuideData();
     }, []);
+
+    const deleteTravelGuide = async () => {
+        try {
+            await deleteTravelGuideById(id ?? "unknown", secret);
+            setDeleteError(false);
+            onClose();
+            routeTo("/travel-guides");
+        } catch (e) {
+            setDeleteError(true);
+        }
+        setSecret("");
+    };
 
     return (
         <DefaultLayout>
@@ -153,7 +179,121 @@ export default function TravelGuideDetailPage() {
                                             </>
                                         )}
                                     </p>
-                                    {/*TODO: Add Edit/Delete Travel Guide */}
+
+                                    <div>
+                                        {/* Edit Action */}
+                                        <div>
+                                            {/*TODO: Add Edit Travel Guide */}
+                                        </div>
+
+                                        {/* Delete Action */}
+                                        <div>
+                                            <Button
+                                                className="mt-3"
+                                                color="danger"
+                                                onPress={onOpen}
+                                            >
+                                                <BootstrapIcon name="trash-fill"></BootstrapIcon>
+                                                Create Travel Guide
+                                            </Button>
+
+                                            {/* Delete Travel Guide Modal */}
+                                            <Modal
+                                                isOpen={isOpen}
+                                                onOpenChange={onOpenChange}
+                                                backdrop="blur"
+                                                size="4xl"
+                                                scrollBehavior="inside"
+                                            >
+                                                <ModalContent>
+                                                    {(onClose) => (
+                                                        <>
+                                                            <ModalHeader className="flex flex-col gap-1">
+                                                                Delete Travel
+                                                                Guide
+                                                            </ModalHeader>
+                                                            <ModalBody>
+                                                                <p>
+                                                                    Are you sure
+                                                                    that you
+                                                                    want to
+                                                                    delete this
+                                                                    Travel
+                                                                    Guide?
+                                                                </p>
+                                                                <p>
+                                                                    To delete
+                                                                    the Travel
+                                                                    Guide, the
+                                                                    password is
+                                                                    required.
+                                                                </p>
+                                                                {deleteError ? (
+                                                                    <>
+                                                                        <Alert
+                                                                            description="Error while deleting the Travel Guide"
+                                                                            color="danger"
+                                                                        >
+                                                                            Check
+                                                                            the
+                                                                            password
+                                                                            and
+                                                                            try
+                                                                            again.
+                                                                        </Alert>
+                                                                    </>
+                                                                ) : (
+                                                                    <></>
+                                                                )}
+                                                                <div>
+                                                                    <Input
+                                                                        name="password"
+                                                                        className="mt-3"
+                                                                        label="Password"
+                                                                        placeholder="Travel Guide Password"
+                                                                        type="password"
+                                                                        isRequired
+                                                                        value={
+                                                                            secret
+                                                                        }
+                                                                        onValueChange={
+                                                                            setSecret
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                                <div className="flex justify-end mb-4 mt-3">
+                                                                    <div className="grow-1"></div>
+                                                                    <Button
+                                                                        color="default"
+                                                                        onPress={
+                                                                            onClose
+                                                                        }
+                                                                        className="mr-2"
+                                                                    >
+                                                                        <BootstrapIcon name="x-circle-fill"></BootstrapIcon>
+                                                                        Cancel
+                                                                    </Button>
+                                                                    <Button
+                                                                        color="danger"
+                                                                        onPress={
+                                                                            deleteTravelGuide
+                                                                        }
+                                                                        isDisabled={
+                                                                            secret.length <
+                                                                            1
+                                                                        }
+                                                                    >
+                                                                        <BootstrapIcon name="trash-fill"></BootstrapIcon>
+                                                                        Delete
+                                                                    </Button>
+                                                                </div>
+                                                            </ModalBody>
+                                                        </>
+                                                    )}
+                                                </ModalContent>
+                                            </Modal>
+                                        </div>
+                                    </div>
                                 </section>
 
                                 {/* Activities */}
