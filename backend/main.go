@@ -94,12 +94,12 @@ func getTravelGuides() ([]TravelGuide, error) {
 // Create a new Travel Guide.
 func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, string, error) {
 	id := "TG_" + uuid.NewString()
-	secret, _ := bcrypt.GenerateFromPassword([]byte(travelGuide.Secret), bcrypt.DefaultCost)
+	secret := getBcrypSecretFromPlaintext(travelGuide.Secret)
 	travelGuide.TravelGuide.Id = id
 	tgi := TravelGuideItem{
 		HashId:      "TG",
 		RangeId:     id,
-		Secret:      string(secret),
+		Secret:      secret,
 		TravelGuide: travelGuide.TravelGuide,
 	}
 	log.Info("Creating a new Travel Guide.", tgi.TravelGuide)
@@ -113,4 +113,9 @@ func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, stri
 	tg := item.TravelGuide
 	log.Info("Created Travel Guide.", tg)
 	return tg, item.Secret, nil
+}
+
+func getBcrypSecretFromPlaintext(secret string) string {
+	encryptedSecret, _ := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
+	return string(encryptedSecret)
 }
