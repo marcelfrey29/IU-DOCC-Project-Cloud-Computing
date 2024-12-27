@@ -1,10 +1,10 @@
 meta {
-  name: Get Travel Guides by ID (404)
+  name: Delete Travel Guides by ID (404)
   type: http
-  seq: 11
+  seq: 13
 }
 
-get {
+delete {
   url: {{baseUrl}}/travel-guides/:id
   body: none
   auth: none
@@ -19,5 +19,5 @@ headers {
 }
 
 assert {
-  res.status: eq 404
+  res.status: eq 200
 }

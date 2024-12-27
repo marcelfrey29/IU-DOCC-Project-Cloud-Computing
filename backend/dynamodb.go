@@ -111,3 +111,27 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 	log.Info("Created Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
 	return travelGuide, nil
 }
+
+// Delete a Travel Guides from the Database.
+func DeleteGuideFromDDB(id string) error {
+	log.Info("Delete Travel Guide by ID.", id)
+
+	var key map[string]types.AttributeValue = make(map[string]types.AttributeValue)
+	key["hashId"] = &types.AttributeValueMemberS{
+		Value: "TG",
+	}
+	key["rangeId"] = &types.AttributeValueMemberS{
+		Value: id,
+	}
+
+	_, err := ddbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		TableName: aws.String(tableName),
+		Key:       key,
+	})
+	if err != nil {
+		log.Error("Error while deleting Travel Guide from DynamoDB.", err.Error())
+		return err
+	}
+
+	return nil
+}

@@ -1,13 +1,17 @@
 meta {
-  name: Get all Travel Guides
+  name: Delete Travel Guides by ID (Public)
   type: http
-  seq: 10
+  seq: 3
 }
 
-get {
-  url: {{baseUrl}}/travel-guides
+delete {
+  url: {{baseUrl}}/travel-guides/:id
   body: none
   auth: none
+}
+
+params:path {
+  id: {{id}}
 }
 
 headers {
@@ -16,5 +20,4 @@ headers {
 
 assert {
   res.status: eq 200
-  res.body: isArray
 }

@@ -74,6 +74,38 @@ func main() {
 		return c.Status(201).JSON(travelGuide)
 	})
 
+	// Delete a Travel Guide
+	app.Delete("/travel-guides/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		auth := c.Get("x-tg-secret")
+
+		// Get the Travel Guide and check the secret value
+		_, err := getTravelGuide(id, auth)
+		var unauthorizedError *UnauthorizedError
+		var notFoundError *NotFoundError
+		if errors.As(err, &unauthorizedError) {
+			log.Error("The Secret is not valid.", err.Error())
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		} else if errors.As(err, &notFoundError) {
+			// If the Travel Guide doesn't exist in the Database, it is already deleted => Return success because
+			// we're in the expected state.
+			log.Info("Travel Guide with the given ID doesn't exist: Already in expected state (Deleted).", id)
+			return c.Status(200).JSON(map[string]string{"message": "Success."})
+		} else if err != nil {
+			log.Error("Error while getting a Travel Guide.", err.Error())
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting the Travel Guide."})
+		}
+
+		// Delete Travel Guide
+		log.Debug("Got Travel Guide and the User has Permissions, deleting...")
+		err = DeleteGuideFromDDB(id)
+		if err != nil {
+			log.Error("Error while deleting Travel Guide.", err.Error())
+			return c.Status(500).JSON(map[string]string{"message": "Error while deleting Travel Guide."})
+		}
+		return c.Status(200).JSON(map[string]string{"message": "Success."})
+	})
+
 	app.Get("/:name", func(c *fiber.Ctx) error {
 		return c.SendString("Hello " + c.Params("name"))
 	})

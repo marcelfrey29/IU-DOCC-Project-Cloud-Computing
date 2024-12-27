@@ -1,23 +1,24 @@
 meta {
-  name: Get Travel Guides by ID (404)
+  name: Delete Travel Guides by ID (Unauthorized)
   type: http
-  seq: 11
+  seq: 6
 }
 
-get {
+delete {
   url: {{baseUrl}}/travel-guides/:id
   body: none
   auth: none
 }
 
 params:path {
-  id: TG_invalid_id
+  id: {{id}}
 }
 
 headers {
   content-type: application/json
+  x-tg-secret: invalid-value
 }
 
 assert {
-  res.status: eq 404
+  res.status: eq 401
 }
