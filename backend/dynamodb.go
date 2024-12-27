@@ -60,6 +60,38 @@ func GetTravelGuidesFromDDB() ([]TravelGuideItem, error) {
 	return travelGuides, nil
 }
 
+// Get all Travel Guides from the Database.
+func GetTravelGuideFromDDB(id string) (TravelGuideItem, error) {
+	log.Info("Get Travel Guide by ID.", id)
+
+	var key map[string]types.AttributeValue = make(map[string]types.AttributeValue)
+	key["hashId"] = &types.AttributeValueMemberS{
+		Value: "TG",
+	}
+	key["rangeId"] = &types.AttributeValueMemberS{
+		Value: id,
+	}
+
+	response, err := ddbClient.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key:       key,
+	})
+	if err != nil {
+		log.Error("Error while getting Travel Guides from DynamoDB.", err.Error())
+		return TravelGuideItem{}, err
+	}
+
+	if response.Item == nil {
+		log.Warn("No Item in DynamoDB.")
+		return TravelGuideItem{}, &NotFoundError{message: "The item doesn't exist."}
+	}
+
+	tgi := new(TravelGuideItem)
+	attributevalue.UnmarshalMap(response.Item, tgi)
+
+	return *tgi, nil
+}
+
 // Create a new Travel Guide in the Database
 func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {
 	log.Info("Creating new Travel Guide in DynamoDB.", travelGuide.HashId, travelGuide.RangeId, travelGuide.TravelGuide)
