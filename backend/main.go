@@ -25,7 +25,7 @@ func main() {
 		tgs, err := getTravelGuides()
 		if err != nil {
 			log.Error("Error while getting Travel Guides.", err.Error())
-			c.Status(500).JSON(map[string]string{"message": "Error while getting Travel Guides."})
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting Travel Guides."})
 		}
 		return c.Status(200).JSON(tgs)
 	})
