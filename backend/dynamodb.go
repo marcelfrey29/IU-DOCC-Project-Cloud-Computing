@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 
@@ -29,6 +30,35 @@ func getAwsConfig() aws.Config {
 }
 
 var ddbClient = dynamodb.NewFromConfig(getAwsConfig())
+
+// Get all Travel Guides from the Database.
+func GetTravelGuidesFromDDB() ([]TravelGuideItem, error) {
+	log.Info("Scanning for all Travel Guides.")
+
+	var attributeValues map[string]types.AttributeValue = make(map[string]types.AttributeValue)
+	attributeValues[":TG"] = &types.AttributeValueMemberS{
+		Value: "TG",
+	}
+
+	response, err := ddbClient.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 aws.String(tableName),
+		KeyConditionExpression:    aws.String("hashId = :TG"),
+		ExpressionAttributeValues: attributeValues,
+	})
+	if err != nil {
+		log.Error("Error while scanning for Travel Guides in DynamoDB.", err.Error())
+		return nil, err
+	}
+
+	var travelGuides []TravelGuideItem
+	for _, travelGuide := range response.Items {
+		tgi := new(TravelGuideItem)
+		attributevalue.UnmarshalMap(travelGuide, tgi)
+		travelGuides = append(travelGuides, *tgi)
+	}
+
+	return travelGuides, nil
+}
 
 // Create a new Travel Guide in the Database
 func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {

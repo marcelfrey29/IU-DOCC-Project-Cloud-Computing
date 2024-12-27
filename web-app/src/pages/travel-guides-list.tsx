@@ -1,8 +1,11 @@
+import { BootstrapIcon } from "@/components/icons";
 import DefaultLayout from "@/layouts/default";
 import {
     Category,
     createTravelGuide,
     CreateTravelGuide,
+    getTravelGuides,
+    TravelGuide,
 } from "@/service/TravelGuide";
 import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
@@ -18,9 +21,21 @@ import {
 } from "@nextui-org/modal";
 import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
 import { Select, SelectItem } from "@nextui-org/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+} from "@nextui-org/table";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function TravelGuidesListPage() {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const [travelGuides, setTravelGuides] = useState([] as TravelGuide[]);
+    const routeTo = useNavigate();
 
     const onSubmit = async (e: any) => {
         e.preventDefault();
@@ -48,6 +63,8 @@ export default function TravelGuidesListPage() {
         };
         try {
             await createTravelGuide(createTravelGuideRequest);
+            // Update Table with latest Data
+            getTravelGuideData();
             onClose();
         } catch (e) {}
     };
@@ -61,6 +78,50 @@ export default function TravelGuidesListPage() {
         { key: 5, label: "Sports" },
         { key: 6, label: "Roadtrip" },
     ];
+
+    const getTravelGuideData = async () => {
+        setTravelGuides(await getTravelGuides());
+    };
+    useEffect(() => {
+        getTravelGuideData();
+    }, []);
+    const travelGuideTableRows = travelGuides.map((tg) => {
+        return (
+            <>
+                <TableRow key={tg.id}>
+                    <TableCell>
+                        {tg.isPrivate === true ? (
+                            <BootstrapIcon
+                                name="lock-fill"
+                                className="text-danger"
+                            />
+                        ) : (
+                            <BootstrapIcon
+                                name="globe-americas"
+                                className="text-success"
+                            />
+                        )}
+                    </TableCell>
+                    <TableCell>
+                        <b>{tg.name}</b>
+                    </TableCell>
+                    <TableCell>{tg.description}</TableCell>
+                    <TableCell>
+                        {categories.find((c) => c.key === tg.category)?.label}
+                    </TableCell>
+                    <TableCell>
+                        <Button
+                            onPress={() => routeTo(`/travel-guides/${tg.id}`)}
+                            color="primary"
+                        >
+                            View Travel Guide{" "}
+                            <BootstrapIcon name="arrow-right" />
+                        </Button>
+                    </TableCell>
+                </TableRow>
+            </>
+        );
+    });
 
     return (
         <DefaultLayout>
@@ -274,6 +335,19 @@ export default function TravelGuidesListPage() {
                         )}
                     </ModalContent>
                 </Modal>
+            </section>
+
+            <section className="mt-12">
+                <Table aria-label="Example static collection table">
+                    <TableHeader>
+                        <TableColumn>Visibility</TableColumn>
+                        <TableColumn>Name</TableColumn>
+                        <TableColumn>Description</TableColumn>
+                        <TableColumn>Category</TableColumn>
+                        <TableColumn>Action</TableColumn>
+                    </TableHeader>
+                    <TableBody>{travelGuideTableRows}</TableBody>
+                </Table>
             </section>
         </DefaultLayout>
     );
