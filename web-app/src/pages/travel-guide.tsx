@@ -162,6 +162,19 @@ export default function TravelGuideDetailPage() {
                                             )
                                             .join(" ▪ ")}
                                     </p>
+                                    <p className="">
+                                        <BootstrapIcon
+                                            name="tag-fill"
+                                            className="mr-1"
+                                        ></BootstrapIcon>
+                                        {
+                                            categoryConfig.find(
+                                                (c) =>
+                                                    c.key ===
+                                                    travelGuide.category,
+                                            )?.label
+                                        }
+                                    </p>
                                     <p>
                                         {travelGuide.isPrivate === true ? (
                                             <>
