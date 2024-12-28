@@ -53,6 +53,37 @@ func main() {
 		return c.Status(200).JSON(travelGuide)
 	})
 
+	// Update a Travel Guide
+	app.Put("/travel-guides/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+		auth := c.Get("x-tg-secret")
+		data := new(UpdateTravelGuideRequest)
+		err := c.BodyParser(data)
+		if err != nil {
+			log.Error("Error while parsing body.", err.Error())
+		}
+
+		if validationErr := validate.Struct(data); validationErr != nil {
+			log.Error("Invalid Request Data.", validationErr.Error())
+			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
+		}
+
+		travelGuide, err := updateTravelGuide(id, auth, data)
+		var unauthorizedError *UnauthorizedError
+		var notFoundError *NotFoundError
+		if errors.As(err, &unauthorizedError) {
+			log.Error("The Secret is not valid.", err.Error())
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		} else if errors.As(err, &notFoundError) {
+			log.Error("Travel Guide with the given ID doesn't exist.", id)
+			return c.Status(404).JSON(map[string]string{"message": "Travel Guide doesn't exist."})
+		} else if err != nil {
+			log.Error("Error while getting a Travel Guide.", err.Error())
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting the Travel Guide."})
+		}
+		return c.Status(200).JSON(travelGuide)
+	})
+
 	// Create a new Travel Guide
 	app.Post("/travel-guides", func(c *fiber.Ctx) error {
 		data := new(CreateTravelGuideRequest)
@@ -184,6 +215,35 @@ func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, stri
 	tg := item.TravelGuide
 	log.Info("Created Travel Guide.", tg)
 	return tg, item.Secret, nil
+}
+
+// Update a Travel Guide.
+func updateTravelGuide(id string, secret string, travelGuide *UpdateTravelGuideRequest) (TravelGuide, error) {
+	// Get Travel Guide
+	item, err := GetTravelGuideFromDDB(id)
+	if err != nil {
+		log.Error("Error while getting Travel Guide.", err.Error())
+		return TravelGuide{}, err
+	}
+	log.Debug("Got Travel Guide from DynamoDB, performing additional checks.", item.HashId, item.RangeId)
+
+	// Check Secret
+	err = bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
+	if err != nil {
+		log.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
+		return TravelGuide{}, &UnauthorizedError{message: "The secret is not valid."}
+	}
+
+	// Update
+	item.TravelGuide = travelGuide.TravelGuide
+	item.TravelGuide.Id = id
+	updatedItem, err := UpdateTravelGuideInDDB(&item)
+	if err != nil {
+		log.Error("Error while deleting Travel Guide.", err.Error())
+		return TravelGuide{}, err
+	}
+
+	return updatedItem.TravelGuide, nil
 }
 
 // Delete a Travel Guide by ID.

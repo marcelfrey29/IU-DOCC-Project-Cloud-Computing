@@ -24,6 +24,11 @@ type CreateTravelGuideRequest struct {
 	Secret      string      `json:"secret" validate:"required,min=8"`
 }
 
+// Request to update a Travel Guide
+type UpdateTravelGuideRequest struct {
+	TravelGuide TravelGuide `json:"travelGuide"`
+}
+
 // A Category is represented by a number (ID).
 type Category int
 

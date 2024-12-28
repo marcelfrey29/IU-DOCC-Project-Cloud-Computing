@@ -1,0 +1,55 @@
+meta {
+  name: Update Travel Guide (Public)
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/travel-guides/:id
+  body: json
+  auth: none
+}
+
+params:path {
+  id: {{id}}
+}
+
+headers {
+  content-type: application/json
+  x-tg-secret: ParisTrip2025
+}
+
+body:json {
+  {
+    "travelGuide": {
+      "name": "Rome",
+      "description": "The main attractions of Rome",
+      "isPrivate": false,
+      "category": 1,
+      "location": {
+        "street": "",
+        "zip": "",
+        "city": "Rome",
+        "state": "Lazio",
+        "country": "Italy"
+      }
+    }
+  }
+}
+
+vars:post-response {
+  id: res.body.id
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: isDefined
+  res.body.name: eq Rome
+  res.body.location.country: eq Italy
+  res.body.secret: isUndefined
+  res.body.id: isString
+  res.body.isPrivate: isFalsy
+  res.body.location.city: eq Rome
+  res.body.location.state: eq Lazio
+  res.body.id: neq ""
+}

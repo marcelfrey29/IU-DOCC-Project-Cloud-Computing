@@ -112,6 +112,26 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 	return travelGuide, nil
 }
 
+// Update a Travel Guide in the Database
+func UpdateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {
+	log.Info("Updating Travel Guide in DynamoDB.", travelGuide.HashId, travelGuide.RangeId, travelGuide.TravelGuide)
+
+	itemToStore, _ := attributevalue.MarshalMap(travelGuide)
+
+	_, err := ddbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName:           aws.String(tableName),
+		Item:                itemToStore,
+		ConditionExpression: aws.String("attribute_exists(hashId) AND attribute_exists(rangeId)"),
+	})
+	if err != nil {
+		log.Error("Error while updating Travel Guide in DyanmoDB.", err.Error())
+		return nil, err
+	}
+
+	log.Info("Updated Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
+	return travelGuide, nil
+}
+
 // Delete a Travel Guides from the Database.
 func DeleteGuideFromDDB(id string) error {
 	log.Info("Delete Travel Guide by ID.", id)
