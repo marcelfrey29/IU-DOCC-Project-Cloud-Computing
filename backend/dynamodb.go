@@ -101,7 +101,7 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 	_, err := ddbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName:           aws.String(tableName),
 		Item:                itemToStore,
-		ConditionExpression: aws.String("attribute_not_exists(id)"),
+		ConditionExpression: aws.String("attribute_not_exists(hashId) and attribute_not_exists(rangeId)"),
 	})
 	if err != nil {
 		log.Error("Error while creating Travel Guide in DyanmoDB.", err.Error())
