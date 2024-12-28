@@ -75,6 +75,7 @@ export default function TravelGuidesListPage() {
                     own.
                 </p>
                 <TravelGuideEditor
+                    type="create"
                     onSuccess={getTravelGuideData}
                 ></TravelGuideEditor>
 

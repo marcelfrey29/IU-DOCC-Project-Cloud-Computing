@@ -1,9 +1,12 @@
 import { categoryConfig } from "@/config/category";
 import {
     Category,
-    CreateTravelGuide,
     createTravelGuide,
+    CreateTravelGuideRequest,
+    TravelGuide,
+    updateTravelGuide,
 } from "@/service/TravelGuide";
+import { Alert } from "@nextui-org/alert";
 import { Button } from "@nextui-org/button";
 import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
@@ -18,10 +21,16 @@ import {
 } from "@nextui-org/modal";
 import { Popover, PopoverContent, PopoverTrigger } from "@nextui-org/popover";
 import { Select, SelectItem } from "@nextui-org/select";
+import { useState } from "react";
 import { BootstrapIcon } from "./icons";
 
-export const TravelGuideEditor = (params: { onSuccess: Function }) => {
+export const TravelGuideEditor = (params: {
+    type: "create" | "update";
+    data?: TravelGuide;
+    onSuccess: (travelGuide: TravelGuide | null) => void;
+}) => {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+    const [showUpdateError, setUpdateError] = useState(false);
 
     const onSubmit = async (e: any) => {
         e.preventDefault();
@@ -29,7 +38,7 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
             new FormData(e.currentTarget),
         ) as Record<string, string>;
 
-        const createTravelGuideRequest: CreateTravelGuide = {
+        const createTravelGuideRequest: CreateTravelGuideRequest = {
             travelGuide: {
                 name: data.name,
                 description: data.description,
@@ -48,19 +57,37 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
             secret: data.password ?? "",
         };
         try {
-            await createTravelGuide(createTravelGuideRequest);
-            // Update Table with latest Data
-            params.onSuccess();
-            // getTravelGuideData();
+            let travelGuide: TravelGuide | null;
+            if (params.type === "create") {
+                travelGuide = await createTravelGuide(createTravelGuideRequest);
+            } else {
+                travelGuide = await updateTravelGuide(
+                    params.data?.id ?? "unknown",
+                    createTravelGuideRequest,
+                    data.password ?? "",
+                );
+            }
+            params.onSuccess(travelGuide);
             onClose();
-        } catch (e) {}
+        } catch (e) {
+            setUpdateError(true);
+        }
     };
 
     return (
         <>
             <Button className="mt-3" color="primary" onPress={onOpen}>
-                <BootstrapIcon name="plus-circle-fill"></BootstrapIcon>
-                Create Travel Guide
+                {params.type === "create" ? (
+                    <>
+                        <BootstrapIcon name="plus-circle-fill"></BootstrapIcon>
+                        Create Travel Guide
+                    </>
+                ) : (
+                    <>
+                        <BootstrapIcon name="pencil-fill"></BootstrapIcon>
+                        Edit Travel Guide
+                    </>
+                )}
             </Button>
             <Modal
                 isOpen={isOpen}
@@ -73,7 +100,11 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">
-                                Create new Travel Guide
+                                {params.type === "create" ? (
+                                    <>Create a new Travel Guide</>
+                                ) : (
+                                    <>Update a Travel Guide</>
+                                )}
                             </ModalHeader>
                             <ModalBody>
                                 <Form
@@ -88,6 +119,9 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="Name"
                                                 placeholder="Name your Travel Guide"
+                                                defaultValue={
+                                                    params?.data?.name
+                                                }
                                                 isRequired
                                                 isClearable
                                                 minLength={1}
@@ -97,12 +131,21 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="Description"
                                                 placeholder="Details about your Travel Guide"
+                                                defaultValue={
+                                                    params?.data?.description
+                                                }
                                                 isClearable
                                             />
                                             <Select
                                                 name="category"
                                                 className="mt-2"
                                                 label="Category"
+                                                defaultSelectedKeys={[
+                                                    (
+                                                        params.data?.category ??
+                                                        Category.MIX
+                                                    ).toString(),
+                                                ]}
                                             >
                                                 {categoryConfig.map(
                                                     (category) => (
@@ -121,6 +164,10 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="Street"
                                                 placeholder="Street"
+                                                defaultValue={
+                                                    params?.data?.location
+                                                        .street
+                                                }
                                                 isClearable
                                             />
                                             <Input
@@ -128,6 +175,9 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="Zip Code"
                                                 placeholder="Zip Code"
+                                                defaultValue={
+                                                    params?.data?.location.zip
+                                                }
                                                 isClearable
                                             />
                                             <Input
@@ -135,6 +185,9 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="City"
                                                 placeholder="City"
+                                                defaultValue={
+                                                    params?.data?.location.city
+                                                }
                                                 isClearable
                                             />
                                             <Input
@@ -142,6 +195,9 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="State"
                                                 placeholder="State"
+                                                defaultValue={
+                                                    params?.data?.location.state
+                                                }
                                                 isClearable
                                             />
                                             <Input
@@ -149,6 +205,10 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                                 className="mt-2"
                                                 label="Country"
                                                 placeholder="Country"
+                                                defaultValue={
+                                                    params?.data?.location
+                                                        .country
+                                                }
                                                 isRequired
                                                 isClearable
                                             />
@@ -190,6 +250,9 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                         <div className="flex py-2 px-1 justify-between">
                                             <Checkbox
                                                 name="isPrivate"
+                                                defaultSelected={
+                                                    params?.data?.isPrivate
+                                                }
                                                 size="md"
                                                 classNames={{
                                                     label: "text-small",
@@ -206,15 +269,50 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                             </Checkbox>
                                         </div>
 
+                                        <Divider className="mt-2"></Divider>
+
+                                        <div className="mt-4">
+                                            {params.type === "create" ? (
+                                                <>
+                                                    The password is required to
+                                                    edit your Travel Guides and
+                                                    to view it when it is
+                                                    private.
+                                                </>
+                                            ) : (
+                                                <>
+                                                    To update a Travel Guide,
+                                                    the Password is required.
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {showUpdateError ? (
+                                            <>
+                                                <div className="mt-3">
+                                                    <Alert
+                                                        description="Error while updating the Travel Guide"
+                                                        color="danger"
+                                                    >
+                                                        Check the password and
+                                                        try again.
+                                                    </Alert>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <></>
+                                        )}
+
                                         <Input
                                             name="password"
                                             className="mt-2"
                                             label="Password"
-                                            placeholder="Enter your password"
+                                            placeholder="Travel Guide Password"
                                             type="password"
                                             isRequired
-                                            minLength={8}
-                                            description="The password is required to edit your Travel Guides and to view it when it is private."
+                                            minLength={
+                                                params.type === "create" ? 8 : 1
+                                            }
                                         />
                                     </div>
                                     <div className="flex justify-end mb-4">
@@ -227,10 +325,27 @@ export const TravelGuideEditor = (params: { onSuccess: Function }) => {
                                             <BootstrapIcon name="x-circle-fill"></BootstrapIcon>
                                             Cancel
                                         </Button>
-                                        <Button color="primary" type="submit">
-                                            <BootstrapIcon name="check-circle-fill"></BootstrapIcon>
-                                            Create Travel Guide
-                                        </Button>
+                                        {params.type === "create" ? (
+                                            <>
+                                                <Button
+                                                    color="primary"
+                                                    type="submit"
+                                                >
+                                                    <BootstrapIcon name="check-circle-fill"></BootstrapIcon>
+                                                    Create Travel Guide
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button
+                                                    color="primary"
+                                                    type="submit"
+                                                >
+                                                    <BootstrapIcon name="check-circle-fill"></BootstrapIcon>
+                                                    Update Travel Guide
+                                                </Button>
+                                            </>
+                                        )}
                                     </div>
                                 </Form>
                             </ModalBody>

@@ -25,13 +25,17 @@ export enum Category {
     ROADTRIP,
 }
 
-export interface CreateTravelGuide {
+export interface CreateTravelGuideRequest {
     travelGuide: TravelGuide;
     secret: string;
 }
 
+export interface UpdateTravelGuideRequest {
+    travelGuide: TravelGuide;
+}
+
 export async function createTravelGuide(
-    data: CreateTravelGuide,
+    data: CreateTravelGuideRequest,
 ): Promise<TravelGuide> {
     const response = await fetch("http://localhost:9090/travel-guides", {
         method: "POST",
@@ -41,6 +45,32 @@ export async function createTravelGuide(
         body: JSON.stringify(data),
     });
     if (response.status !== 201) {
+        throw new Error();
+    }
+    const body = await response.json();
+    return body;
+}
+
+export async function updateTravelGuide(
+    id: string,
+    data: UpdateTravelGuideRequest,
+    secret: string,
+): Promise<TravelGuide | null> {
+    const response = await fetch("http://localhost:9090/travel-guides/" + id, {
+        method: "PUT",
+        headers: new Headers({
+            "content-type": "application/json",
+            "x-tg-secret": secret,
+        }),
+        body: JSON.stringify(data),
+    });
+    if (response.status === 404) {
+        return null;
+    }
+    if (response.status === 401) {
+        throw new UnauthorizedError();
+    }
+    if (response.status !== 200) {
         throw new Error();
     }
     const body = await response.json();

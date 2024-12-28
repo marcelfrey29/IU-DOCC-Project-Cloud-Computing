@@ -1,4 +1,6 @@
 import { BootstrapIcon } from "@/components/icons";
+import { TravelGuideEditor } from "@/components/travel-guide-editor";
+import { categoryConfig } from "@/config/category";
 import DefaultLayout from "@/layouts/default";
 import {
     deleteTravelGuideById,
@@ -34,8 +36,8 @@ export default function TravelGuideDetailPage() {
             setAuthRequired(false);
         } catch (e) {
             setAuthRequired(true);
+            setSecret("");
         }
-        setSecret("");
     };
     useEffect(() => {
         getTravelGuideData();
@@ -180,9 +182,16 @@ export default function TravelGuideDetailPage() {
                                         )}
                                     </p>
 
-                                    <div>
+                                    <div className="flex">
                                         {/* Edit Action */}
-                                        <div>
+                                        <div className="mr-2">
+                                            <TravelGuideEditor
+                                                type="update"
+                                                data={travelGuide}
+                                                onSuccess={(d) => {
+                                                    setTravelGuide(d);
+                                                }}
+                                            ></TravelGuideEditor>
                                             {/*TODO: Add Edit Travel Guide */}
                                         </div>
 
