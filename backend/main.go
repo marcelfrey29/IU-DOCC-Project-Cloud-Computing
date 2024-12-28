@@ -7,6 +7,8 @@ import (
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -29,6 +31,8 @@ func main() {
 		Logger: logger,
 	}))
 	app.Use(cors.New())
+	app.Use(healthcheck.New())
+	app.Use(helmet.New())
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
