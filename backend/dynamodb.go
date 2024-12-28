@@ -9,10 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-
-	"github.com/gofiber/fiber/v2/log"
 )
 
 var tableName = os.Getenv("DYNAMODB_TABLE_TRAVEL_GUIDES")
@@ -23,7 +22,7 @@ var dynamoDbLocalUrl = os.Getenv("DYNAMODB_LOCAL_URL")
 func getAwsConfig() aws.Config {
 	cfg, _ := config.LoadDefaultConfig(context.TODO())
 	if useDynamoDbLocal {
-		log.Info("DynamoDB Local should be used, setting local DynamoDB URL.", useDynamoDbLocal, dynamoDbLocalUrl)
+		logger.Info("DynamoDB Local should be used, setting local DynamoDB URL.", zap.Bool("useDynamoDBLocal", useDynamoDbLocal), zap.String("dynamoDBLocalUrl", dynamoDbLocalUrl))
 		cfg.BaseEndpoint = &dynamoDbLocalUrl
 	}
 	return cfg
@@ -33,7 +32,7 @@ var ddbClient = dynamodb.NewFromConfig(getAwsConfig())
 
 // Get all Travel Guides from the Database.
 func GetTravelGuidesFromDDB() ([]TravelGuideItem, error) {
-	log.Info("Scanning for all Travel Guides.")
+	logger.Info("Getting for all Travel Guides from DynamoDB.")
 
 	var attributeValues map[string]types.AttributeValue = make(map[string]types.AttributeValue)
 	attributeValues[":TG"] = &types.AttributeValueMemberS{
@@ -46,7 +45,7 @@ func GetTravelGuidesFromDDB() ([]TravelGuideItem, error) {
 		ExpressionAttributeValues: attributeValues,
 	})
 	if err != nil {
-		log.Error("Error while scanning for Travel Guides in DynamoDB.", err.Error())
+		logger.Error("Error while getting all Travel Guides from DynamoDB.", zap.String("error", err.Error()))
 		return nil, err
 	}
 
@@ -62,7 +61,7 @@ func GetTravelGuidesFromDDB() ([]TravelGuideItem, error) {
 
 // Get all Travel Guides from the Database.
 func GetTravelGuideFromDDB(id string) (TravelGuideItem, error) {
-	log.Info("Get Travel Guide by ID.", id)
+	logger.Info("Get Travel Guide by ID from DynamoDB.", zap.String("id", id))
 
 	var key map[string]types.AttributeValue = make(map[string]types.AttributeValue)
 	key["hashId"] = &types.AttributeValueMemberS{
@@ -77,12 +76,12 @@ func GetTravelGuideFromDDB(id string) (TravelGuideItem, error) {
 		Key:       key,
 	})
 	if err != nil {
-		log.Error("Error while getting Travel Guides from DynamoDB.", err.Error())
+		logger.Error("Error while getting Travel Guides from DynamoDB.", zap.String("error", err.Error()))
 		return TravelGuideItem{}, err
 	}
 
 	if response.Item == nil {
-		log.Warn("No Item in DynamoDB.")
+		logger.Warn("No Item in DynamoDB.", zap.String("id", id))
 		return TravelGuideItem{}, &NotFoundError{message: "The item doesn't exist."}
 	}
 
@@ -94,7 +93,7 @@ func GetTravelGuideFromDDB(id string) (TravelGuideItem, error) {
 
 // Create a new Travel Guide in the Database
 func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {
-	log.Info("Creating new Travel Guide in DynamoDB.", travelGuide.HashId, travelGuide.RangeId, travelGuide.TravelGuide)
+	logger.Info("Creating new Travel Guide in DynamoDB.", zap.String("hashId", travelGuide.HashId), zap.String("rangeId", travelGuide.RangeId))
 
 	itemToStore, _ := attributevalue.MarshalMap(travelGuide)
 
@@ -104,17 +103,17 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 		ConditionExpression: aws.String("attribute_not_exists(hashId) and attribute_not_exists(rangeId)"),
 	})
 	if err != nil {
-		log.Error("Error while creating Travel Guide in DyanmoDB.", err.Error())
+		logger.Error("Error while creating Travel Guide in DyanmoDB.", zap.String("error", err.Error()))
 		return nil, err
 	}
 
-	log.Info("Created Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
+	logger.Debug("Created Travel Guide in DyanmoDB.", zap.String("hashId", travelGuide.HashId), zap.String("rangeId", travelGuide.RangeId))
 	return travelGuide, nil
 }
 
 // Update a Travel Guide in the Database
 func UpdateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {
-	log.Info("Updating Travel Guide in DynamoDB.", travelGuide.HashId, travelGuide.RangeId, travelGuide.TravelGuide)
+	logger.Info("Updating Travel Guide in DynamoDB.", zap.String("hashId", travelGuide.HashId), zap.String("rangeId", travelGuide.RangeId))
 
 	itemToStore, _ := attributevalue.MarshalMap(travelGuide)
 
@@ -124,17 +123,17 @@ func UpdateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 		ConditionExpression: aws.String("attribute_exists(hashId) AND attribute_exists(rangeId)"),
 	})
 	if err != nil {
-		log.Error("Error while updating Travel Guide in DyanmoDB.", err.Error())
+		logger.Error("Error while updating Travel Guide in DyanmoDB.", zap.String("error", err.Error()))
 		return nil, err
 	}
 
-	log.Info("Updated Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
+	logger.Debug("Updated Travel Guide in DyanmoDB.", zap.String("hashId", travelGuide.HashId), zap.String("rangeId", travelGuide.RangeId))
 	return travelGuide, nil
 }
 
 // Delete a Travel Guides from the Database.
 func DeleteGuideFromDDB(id string) error {
-	log.Info("Delete Travel Guide by ID.", id)
+	logger.Info("Delete Travel Guide by ID.", zap.String("id", id))
 
 	var key map[string]types.AttributeValue = make(map[string]types.AttributeValue)
 	key["hashId"] = &types.AttributeValueMemberS{
@@ -149,7 +148,7 @@ func DeleteGuideFromDDB(id string) error {
 		Key:       key,
 	})
 	if err != nil {
-		log.Error("Error while deleting Travel Guide from DynamoDB.", err.Error())
+		logger.Error("Error while deleting Travel Guide from DynamoDB.", zap.String("error", err.Error()))
 		return err
 	}
 
