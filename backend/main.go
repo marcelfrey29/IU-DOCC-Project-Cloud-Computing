@@ -4,19 +4,35 @@ import (
 	"errors"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/healthcheck"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var logger, _ = zap.NewProduction()
 var validate *validator.Validate
+
+//var logger *zap.Logger
 
 func main() {
 	validate = validator.New(validator.WithRequiredStructEnabled())
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
 	app := fiber.New()
+	app.Use(requestid.New())
+	app.Use(fiberzap.New(fiberzap.Config{
+		Logger: logger,
+	}))
 	app.Use(cors.New())
+	app.Use(healthcheck.New())
+	app.Use(helmet.New())
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
@@ -26,9 +42,10 @@ func main() {
 	app.Get("/travel-guides", func(c *fiber.Ctx) error {
 		tgs, err := getTravelGuides()
 		if err != nil {
-			log.Error("Error while getting Travel Guides.", err.Error())
+			logger.Error("Error while getting Travel Guides.", zap.String("error", err.Error()))
 			return c.Status(500).JSON(map[string]string{"message": "Error while getting Travel Guides."})
 		}
+		logger.Info("Got all Travel Guides.", zap.Int("count", len(tgs)))
 		return c.Status(200).JSON(tgs)
 	})
 
@@ -41,15 +58,16 @@ func main() {
 		var unauthorizedError *UnauthorizedError
 		var notFoundError *NotFoundError
 		if errors.As(err, &unauthorizedError) {
-			log.Error("The Secret is not valid.", err.Error())
+			logger.Warn("The Secret is not valid.", zap.String("id", id), zap.String("error", err.Error()))
 			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
 		} else if errors.As(err, &notFoundError) {
-			log.Error("Travel Guide with the given ID doesn't exist.", id)
+			logger.Warn("Travel Guide with the given ID doesn't exist.", zap.String("id", id))
 			return c.Status(404).JSON(map[string]string{"message": "Travel Guide doesn't exist."})
 		} else if err != nil {
-			log.Error("Error while getting a Travel Guide.", err.Error())
+			logger.Error("Error while getting a Travel Guide by ID.", zap.String("id", id), zap.String("error", err.Error()))
 			return c.Status(500).JSON(map[string]string{"message": "Error while getting the Travel Guide."})
 		}
+		logger.Info("Got Travel Guide by ID.", zap.Any("travelGuide", travelGuide))
 		return c.Status(200).JSON(travelGuide)
 	})
 
@@ -60,11 +78,11 @@ func main() {
 		data := new(UpdateTravelGuideRequest)
 		err := c.BodyParser(data)
 		if err != nil {
-			log.Error("Error while parsing body.", err.Error())
+			logger.Error("Error while parsing body.", zap.String("error", err.Error()))
 		}
 
 		if validationErr := validate.Struct(data); validationErr != nil {
-			log.Error("Invalid Request Data.", validationErr.Error())
+			logger.Warn("Invalid Request Data.", zap.String("error", validationErr.Error()))
 			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
 		}
 
@@ -72,15 +90,16 @@ func main() {
 		var unauthorizedError *UnauthorizedError
 		var notFoundError *NotFoundError
 		if errors.As(err, &unauthorizedError) {
-			log.Error("The Secret is not valid.", err.Error())
+			logger.Warn("The Secret is not valid.", zap.String("id", id), zap.String("error", err.Error()))
 			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
 		} else if errors.As(err, &notFoundError) {
-			log.Error("Travel Guide with the given ID doesn't exist.", id)
+			logger.Warn("Travel Guide with the given ID doesn't exist.", zap.String("id", id))
 			return c.Status(404).JSON(map[string]string{"message": "Travel Guide doesn't exist."})
 		} else if err != nil {
-			log.Error("Error while getting a Travel Guide.", err.Error())
+			logger.Error("Error while updating a Travel Guide.", zap.String("id", id), zap.String("error", err.Error()))
 			return c.Status(500).JSON(map[string]string{"message": "Error while getting the Travel Guide."})
 		}
+		logger.Info("Updated Travel Guide.", zap.Any("travelGuide", travelGuide))
 		return c.Status(200).JSON(travelGuide)
 	})
 
@@ -89,19 +108,20 @@ func main() {
 		data := new(CreateTravelGuideRequest)
 		err := c.BodyParser(data)
 		if err != nil {
-			log.Error("Error while parsing body.")
+			logger.Error("Error while parsing body.", zap.String("error", err.Error()))
 		}
 
 		if validationErr := validate.Struct(data); validationErr != nil {
-			log.Error("Invalid Request Data.", validationErr.Error())
+			logger.Warn("Invalid Request Data.", zap.String("error", validationErr.Error()))
 			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
 		}
 
 		travelGuide, _, err := createTravelGuide(data)
 		if err != nil {
+			logger.Error("Error while creating Travel Guide.", zap.String("error", err.Error()))
 			return c.Status(500).JSON(map[string]string{"message": "Error while creating Travel Guide."})
 		}
-		log.Info("Created Travel Guide.", travelGuide)
+		logger.Info("Created Travel Guide.", zap.Any("travelGuide", travelGuide))
 		return c.Status(201).JSON(travelGuide)
 	})
 
@@ -115,18 +135,19 @@ func main() {
 		var unauthorizedError *UnauthorizedError
 		var notFoundError *NotFoundError
 		if errors.As(err, &unauthorizedError) {
-			log.Error("The Secret is not valid.", err.Error())
+			logger.Warn("The Secret is not valid.", zap.String("error", err.Error()))
 			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
 		} else if errors.As(err, &notFoundError) {
 			// If the Travel Guide doesn't exist in the Database, it is already deleted => Return success because
 			// we're in the expected state.
-			log.Info("Travel Guide with the given ID doesn't exist: Already in expected state (Deleted).", id)
+			logger.Info("The Travel Guide with the given ID doesn't exist: Already in expected state (Deleted).", zap.String("id", id))
 			return c.Status(200).JSON(map[string]string{"message": "Success."})
 		} else if err != nil {
-			log.Error("Error while deleting Travel Guide.", err.Error())
+			logger.Error("Error while deleting Travel Guide.", zap.String("error", err.Error()))
 			return c.Status(500).JSON(map[string]string{"message": "Error while deleting the Travel Guide."})
 		}
 
+		logger.Info("Deleted Travel Guide.", zap.String("id", id))
 		return c.Status(200).JSON(map[string]string{"message": "Success."})
 	})
 
@@ -141,11 +162,11 @@ func main() {
 //
 // For private Travel Guides, all information (except the name) are removed.
 func getTravelGuides() ([]TravelGuide, error) {
-	log.Info("Get all Travel Guides.")
+	logger.Info("Get all Travel Guides.")
 	items, err := GetTravelGuidesFromDDB()
 
 	if err != nil {
-		log.Error("Error while getting Travel Guides.", error.Error)
+		logger.Error("Error while getting Travel Guides.", zap.String("error", err.Error()))
 		return nil, err
 	}
 
@@ -154,18 +175,18 @@ func getTravelGuides() ([]TravelGuide, error) {
 	var travelGuides []TravelGuide
 	for _, item := range items {
 		if item.TravelGuide.Private {
-			log.Debug("Travel Guide is Private, hiding all private information.", item.HashId, item.RangeId)
+			logger.Debug("Travel Guide is Private, hiding all private information.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
 			privateTravelGuide := new(TravelGuide)
 			privateTravelGuide.Private = true
 			privateTravelGuide.Name = item.TravelGuide.Name
 			privateTravelGuide.Id = item.TravelGuide.Id
 			travelGuides = append(travelGuides, *privateTravelGuide)
 		} else {
-			log.Debug("Travel Guide is Public, returning.", item.HashId, item.RangeId)
+			logger.Debug("Travel Guide is Public, returning.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
 			travelGuides = append(travelGuides, item.TravelGuide)
 		}
 	}
-	log.Info("Got all Travel Guides.", len(travelGuides))
+	logger.Info("Got all Travel Guides.", zap.Int("count", len(travelGuides)))
 
 	return travelGuides, nil
 }
@@ -174,18 +195,17 @@ func getTravelGuides() ([]TravelGuide, error) {
 func getTravelGuide(id string, secret string) (TravelGuide, error) {
 	item, err := GetTravelGuideFromDDB(id)
 	if err != nil {
-		log.Error("Error while getting Travel Guide.", error.Error)
+		logger.Error("Error while getting Travel Guide.", zap.String("error", err.Error()))
 		return TravelGuide{}, err
 	}
 
 	travelGuide := item.TravelGuide
-	log.Debug("Got Travel Guide from DynamoDB, performing additional checks.", travelGuide)
 	if travelGuide.Private {
-		log.Debug("Travel Guide is  Private, checking Secret.")
+		logger.Debug("Travel Guide is Private, checking Secret.", zap.String("id", id))
 
 		err := bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
 		if err != nil {
-			log.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
+			logger.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.", zap.String("id", id))
 			return travelGuide, &UnauthorizedError{message: "The secret is not valid."}
 		}
 	}
@@ -204,16 +224,16 @@ func createTravelGuide(travelGuide *CreateTravelGuideRequest) (TravelGuide, stri
 		Secret:      secret,
 		TravelGuide: travelGuide.TravelGuide,
 	}
-	log.Info("Creating a new Travel Guide.", tgi.TravelGuide)
+	logger.Debug("Creating a new Travel Guide.", zap.Any("travelGuide", tgi.TravelGuide))
 
 	item, err := CreateTravelGuideInDDB(&tgi)
 	if err != nil {
-		log.Error("Error while creating Travel Guide.", error.Error)
+		logger.Error("Error while creating Travel Guide.", zap.String("error", err.Error()))
 		return TravelGuide{}, "", err
 	}
 
 	tg := item.TravelGuide
-	log.Info("Created Travel Guide.", tg)
+	logger.Debug("Created Travel Guide.", zap.Any("travelGuide", tg))
 	return tg, item.Secret, nil
 }
 
@@ -222,24 +242,25 @@ func updateTravelGuide(id string, secret string, travelGuide *UpdateTravelGuideR
 	// Get Travel Guide
 	item, err := GetTravelGuideFromDDB(id)
 	if err != nil {
-		log.Error("Error while getting Travel Guide.", err.Error())
+		logger.Error("Error while getting Travel Guide.", zap.String("error", err.Error()))
 		return TravelGuide{}, err
 	}
-	log.Debug("Got Travel Guide from DynamoDB, performing additional checks.", item.HashId, item.RangeId)
+	logger.Debug("Got Travel Guide from DynamoDB, performing additional checks.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
 
 	// Check Secret
 	err = bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
 	if err != nil {
-		log.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
+		logger.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.", zap.String("id", id))
 		return TravelGuide{}, &UnauthorizedError{message: "The secret is not valid."}
 	}
+	logger.Debug("Secret matches Travel Guide Secret.", zap.String("id", id))
 
 	// Update
 	item.TravelGuide = travelGuide.TravelGuide
 	item.TravelGuide.Id = id
 	updatedItem, err := UpdateTravelGuideInDDB(&item)
 	if err != nil {
-		log.Error("Error while deleting Travel Guide.", err.Error())
+		logger.Error("Error while deleting Travel Guide.", zap.String("error", err.Error()))
 		return TravelGuide{}, err
 	}
 
@@ -251,22 +272,23 @@ func deleteTravelGuide(id string, secret string) error {
 	// Get Travel Guide
 	item, err := GetTravelGuideFromDDB(id)
 	if err != nil {
-		log.Error("Error while getting Travel Guide.", error.Error)
+		logger.Error("Error while getting Travel Guide.", zap.String("error", err.Error()))
 		return err
 	}
-	log.Debug("Got Travel Guide from DynamoDB, performing additional checks.", item.HashId, item.RangeId)
+	logger.Debug("Got Travel Guide from DynamoDB, performing additional checks.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
 
 	// Check Secret
 	err = bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
 	if err != nil {
-		log.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
+		logger.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.")
 		return &UnauthorizedError{message: "The secret is not valid."}
 	}
+	logger.Debug("Secret matches Travel Guide Secret.", zap.String("id", id))
 
 	// Delete
 	err = DeleteGuideFromDDB(id)
 	if err != nil {
-		log.Error("Error while deleting Travel Guide.", err.Error())
+		logger.Error("Error while deleting Travel Guide.", zap.String("error", err.Error()))
 		return err
 	}
 
