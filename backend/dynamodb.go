@@ -101,7 +101,7 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 	_, err := ddbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName:           aws.String(tableName),
 		Item:                itemToStore,
-		ConditionExpression: aws.String("attribute_not_exists(id)"),
+		ConditionExpression: aws.String("attribute_not_exists(hashId) and attribute_not_exists(rangeId)"),
 	})
 	if err != nil {
 		log.Error("Error while creating Travel Guide in DyanmoDB.", err.Error())
@@ -109,6 +109,26 @@ func CreateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, err
 	}
 
 	log.Info("Created Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
+	return travelGuide, nil
+}
+
+// Update a Travel Guide in the Database
+func UpdateTravelGuideInDDB(travelGuide *TravelGuideItem) (*TravelGuideItem, error) {
+	log.Info("Updating Travel Guide in DynamoDB.", travelGuide.HashId, travelGuide.RangeId, travelGuide.TravelGuide)
+
+	itemToStore, _ := attributevalue.MarshalMap(travelGuide)
+
+	_, err := ddbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName:           aws.String(tableName),
+		Item:                itemToStore,
+		ConditionExpression: aws.String("attribute_exists(hashId) AND attribute_exists(rangeId)"),
+	})
+	if err != nil {
+		log.Error("Error while updating Travel Guide in DyanmoDB.", err.Error())
+		return nil, err
+	}
+
+	log.Info("Updated Travel Guide in DyanmoDB.", travelGuide.HashId, travelGuide.RangeId)
 	return travelGuide, nil
 }
 

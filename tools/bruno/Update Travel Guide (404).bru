@@ -1,0 +1,46 @@
+meta {
+  name: Update Travel Guide (404)
+  type: http
+  seq: 17
+}
+
+put {
+  url: {{baseUrl}}/travel-guides/:id
+  body: json
+  auth: none
+}
+
+params:path {
+  id: TG_invalid_id
+}
+
+headers {
+  content-type: application/json
+  x-tg-secret: ParisTrip2025
+}
+
+body:json {
+  {
+    "travelGuide": {
+      "name": "Rome",
+      "description": "The main attractions of Rome",
+      "isPrivate": false,
+      "category": 1,
+      "location": {
+        "street": "",
+        "zip": "",
+        "city": "Rome",
+        "state": "Lazio",
+        "country": "Italy"
+      }
+    }
+  }
+}
+
+vars:post-response {
+  id: res.body.id
+}
+
+assert {
+  res.status: eq 404
+}
