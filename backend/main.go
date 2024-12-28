@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +24,7 @@ func main() {
 	defer logger.Sync()
 
 	app := fiber.New()
+	app.Use(requestid.New())
 	app.Use(fiberzap.New(fiberzap.Config{
 		Logger: logger,
 	}))
