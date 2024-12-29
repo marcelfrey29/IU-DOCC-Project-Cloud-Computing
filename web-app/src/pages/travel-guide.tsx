@@ -1,3 +1,4 @@
+import { ActivityEditor } from "@/components/activity-editor";
 import { BootstrapIcon } from "@/components/icons";
 import { TravelGuideEditor } from "@/components/travel-guide-editor";
 import { categoryConfig } from "@/config/category";
@@ -323,8 +324,13 @@ export default function TravelGuideDetailPage() {
                                     <h2 className="text-2xl">
                                         <b>Activities</b>
                                     </h2>
-                                    <p className="mt-1">No Activies.</p>
-                                    {/* TODO: Add Activities & Activity Management */}
+                                    <ActivityEditor
+                                        type="create"
+                                        travelGuideId={id ?? "unknown"}
+                                        onSuccess={() => {
+                                            /* TODO: add list update */
+                                        }}
+                                    ></ActivityEditor>
                                 </section>
                             </section>
                         </>
