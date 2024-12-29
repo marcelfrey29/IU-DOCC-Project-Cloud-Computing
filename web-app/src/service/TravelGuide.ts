@@ -1,3 +1,5 @@
+import { Category, Location, UnauthorizedError } from "./Shared";
+
 export interface TravelGuide {
     id?: string;
     name: string;
@@ -5,24 +7,6 @@ export interface TravelGuide {
     isPrivate: boolean;
     location: Location;
     category: Category;
-}
-
-export interface Location {
-    street?: string;
-    zip?: string;
-    city?: string;
-    state?: string;
-    country: string;
-}
-
-export enum Category {
-    MIX,
-    CULTURE,
-    ACTION,
-    RELAX,
-    ADVENTURE,
-    SPORTS,
-    ROADTRIP,
 }
 
 export interface CreateTravelGuideRequest {
@@ -133,8 +117,3 @@ export async function deleteTravelGuideById(
         throw new Error();
     }
 }
-
-/**
- * Error if the user is not authorized to access a resource.
- */
-export class UnauthorizedError extends Error {}

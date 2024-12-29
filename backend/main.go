@@ -151,6 +151,68 @@ func main() {
 		return c.Status(200).JSON(map[string]string{"message": "Success."})
 	})
 
+	// Create an Activity in a Travel Guide.
+	app.Get("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+		tgId := c.Params("id")
+		auth := c.Get("x-tg-secret")
+
+		// Check Access
+		accessErr := checkTravelGuideAccess(tgId, auth, true)
+		if accessErr != nil {
+			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		}
+
+		// Get all Activities
+		activities, err := getActivities(tgId)
+		if err != nil {
+			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting all Activities for the Travel Guide."})
+		}
+		logger.Info("Got all Activities of Travel Guide.")
+		return c.Status(200).JSON(activities)
+	})
+
+	// Create an Activity in a Travel Guide.
+	app.Post("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+		tgId := c.Params("id")
+		auth := c.Get("x-tg-secret")
+
+		// Check Access
+		accessErr := checkTravelGuideAccess(tgId, auth, false)
+		if accessErr != nil {
+			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		}
+
+		// Validate data
+		data := new(CreateActivityRequest)
+		err := c.BodyParser(data)
+		if err != nil {
+			logger.Error("Error while parsing body.", zap.String("error", err.Error()))
+		}
+		if validationErr := validate.Struct(data); validationErr != nil {
+			logger.Warn("Invalid Request Data.", zap.String("error", validationErr.Error()))
+			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
+		}
+
+		// Create Activity
+		_, err = createActivity(tgId, data.Activity)
+		if err != nil {
+			logger.Error("Error while creating Activity for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while creating Activity."})
+		}
+		logger.Info("Created Activity.")
+
+		activities, err := getActivities(tgId)
+		if err != nil {
+			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting all Activities for the Travel Guide."})
+		}
+		logger.Info("Got all Activities of Travel Guide.")
+		return c.Status(201).JSON(activities)
+	})
+
 	app.Get("/:name", func(c *fiber.Ctx) error {
 		return c.SendString("Hello " + c.Params("name"))
 	})
@@ -298,4 +360,73 @@ func deleteTravelGuide(id string, secret string) error {
 func getBcrypSecretFromPlaintext(secret string) string {
 	encryptedSecret, _ := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
 	return string(encryptedSecret)
+}
+
+// Check if a user has access to a Travel Guide.
+// Access is allowed if this function returns `nil`.
+func checkTravelGuideAccess(travelGuideId string, secret string, readOnly bool) error {
+	// Get Travel Guide
+	item, err := GetTravelGuideFromDDB(travelGuideId)
+	if err != nil {
+		logger.Error("Error while getting Travel Guide.", zap.String("error", err.Error()))
+		return err
+	}
+	if readOnly && item.TravelGuide.Private == false {
+		logger.Info("Skipping secret check for read-only access to public travel guide.", zap.Bool("readOnly", readOnly), zap.Bool("isPrivate", item.TravelGuide.Private))
+		return nil
+	}
+	logger.Debug("Got Travel Guide from DynamoDB, performing secret check.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
+
+	// Check Secret
+	err = bcrypt.CompareHashAndPassword([]byte(item.Secret), []byte(secret))
+	if err != nil {
+		logger.Warn("The provided secret doesn't match the Travel Guide Secret: Unauthorized.", zap.String("id", travelGuideId))
+		return &UnauthorizedError{message: "The secret is not valid."}
+	}
+
+	logger.Debug("Secret matches Travel Guide Secret.", zap.String("id", travelGuideId))
+	return nil
+}
+
+// Create a new Activity.
+func createActivity(tgId string, activity Activity) (Activity, error) {
+	hashId := "ACT#" + tgId
+	rangeId := "ACT_" + uuid.NewString()
+
+	activity.Id = rangeId
+	tgi := ActivityItem{
+		HashId:   hashId,
+		RangeId:  rangeId,
+		Activity: activity,
+	}
+	logger.Debug("Creating a new Travel Guide.", zap.Any("activity", tgi.Activity))
+
+	item, err := CreateActivityInDDB(&tgi)
+	if err != nil {
+		logger.Error("Error while creating Travel Guide.", zap.String("error", err.Error()))
+		return Activity{}, err
+	}
+
+	act := item.Activity
+	logger.Debug("Created Activity.", zap.Any("activity", act))
+	return act, nil
+}
+
+// Get all Activites.
+func getActivities(tgId string) ([]Activity, error) {
+	logger.Info("Get all Activities for Travel Guide.", zap.String("id", tgId))
+	items, err := GetActivitiesFromDDB("ACT#" + tgId)
+
+	if err != nil {
+		logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+		return nil, err
+	}
+
+	var travelGuides []Activity = []Activity{}
+	for _, item := range items {
+		travelGuides = append(travelGuides, item.Activity)
+	}
+	logger.Info("Got all Activities for Travel Guides.", zap.Int("count", len(travelGuides)))
+
+	return travelGuides, nil
 }

@@ -1,14 +1,12 @@
 import { categoryConfig } from "@/config/category";
-import { Category } from "@/service/Shared";
 import {
-    createTravelGuide,
-    CreateTravelGuideRequest,
-    TravelGuide,
-    updateTravelGuide,
-} from "@/service/TravelGuide";
+    Activity,
+    createActivity,
+    CreateActivityRequest,
+} from "@/service/Activity";
+import { Category } from "@/service/Shared";
 import { Alert } from "@nextui-org/alert";
 import { Button } from "@nextui-org/button";
-import { Checkbox } from "@nextui-org/checkbox";
 import { Divider } from "@nextui-org/divider";
 import { Form } from "@nextui-org/form";
 import { Input } from "@nextui-org/input";
@@ -24,10 +22,11 @@ import { Select, SelectItem } from "@nextui-org/select";
 import { useState } from "react";
 import { BootstrapIcon } from "./icons";
 
-export const TravelGuideEditor = (params: {
+export const ActivityEditor = (params: {
     type: "create" | "update";
-    data?: TravelGuide;
-    onSuccess: (travelGuide: TravelGuide | null) => void;
+    travelGuideId: string;
+    data?: Activity;
+    onSuccess: (travelGuide: Activity[]) => void;
 }) => {
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [showUpdateError, setUpdateError] = useState(false);
@@ -38,11 +37,10 @@ export const TravelGuideEditor = (params: {
             new FormData(e.currentTarget),
         ) as Record<string, string>;
 
-        const createTravelGuideRequest: CreateTravelGuideRequest = {
-            travelGuide: {
+        const createActivityRequest: CreateActivityRequest = {
+            activity: {
                 name: data.name,
                 description: data.description,
-                isPrivate: data.isPrivate === undefined ? false : true,
                 location: {
                     street: data.street,
                     zip: data.zip,
@@ -53,21 +51,24 @@ export const TravelGuideEditor = (params: {
                 category: parseInt(
                     data.category ?? Category.MIX,
                 ) as unknown as Category,
+                costsInCent: parseInt(data.costs),
+                timeInMin: parseInt(data.costs),
             },
-            secret: data.password ?? "",
         };
+        const secret = data.password;
+
         try {
-            let travelGuide: TravelGuide | null;
+            let activity: Activity[] = [];
             if (params.type === "create") {
-                travelGuide = await createTravelGuide(createTravelGuideRequest);
-            } else {
-                travelGuide = await updateTravelGuide(
-                    params.data?.id ?? "unknown",
-                    createTravelGuideRequest,
-                    data.password ?? "",
+                activity = await createActivity(
+                    params.travelGuideId,
+                    createActivityRequest,
+                    secret,
                 );
+            } else {
+                // TODO: Update Activity
             }
-            params.onSuccess(travelGuide);
+            params.onSuccess(activity);
             onClose();
         } catch (e) {
             setUpdateError(true);
@@ -80,12 +81,11 @@ export const TravelGuideEditor = (params: {
                 {params.type === "create" ? (
                     <>
                         <BootstrapIcon name="plus-circle-fill"></BootstrapIcon>
-                        Create Travel Guide
+                        Add Activity
                     </>
                 ) : (
                     <>
                         <BootstrapIcon name="pencil-fill"></BootstrapIcon>
-                        Edit Travel Guide
                     </>
                 )}
             </Button>
@@ -101,9 +101,9 @@ export const TravelGuideEditor = (params: {
                         <>
                             <ModalHeader className="flex flex-col gap-1">
                                 {params.type === "create" ? (
-                                    <>Create a new Travel Guide</>
+                                    <>Create a new Activity</>
                                 ) : (
-                                    <>Update a Travel Guide</>
+                                    <>Update an Activity</>
                                 )}
                             </ModalHeader>
                             <ModalBody>
@@ -118,7 +118,7 @@ export const TravelGuideEditor = (params: {
                                                 name="name"
                                                 className="mt-2"
                                                 label="Name"
-                                                placeholder="Name your Travel Guide"
+                                                placeholder="What to do?"
                                                 defaultValue={
                                                     params?.data?.name
                                                 }
@@ -130,7 +130,7 @@ export const TravelGuideEditor = (params: {
                                                 name="description"
                                                 className="mt-2"
                                                 label="Description"
-                                                placeholder="Details about your Travel Guide"
+                                                placeholder="Describe the Activity"
                                                 defaultValue={
                                                     params?.data?.description
                                                 }
@@ -157,6 +157,28 @@ export const TravelGuideEditor = (params: {
                                                     ),
                                                 )}
                                             </Select>
+
+                                            <Input
+                                                name="time"
+                                                className="mt-2"
+                                                type="number"
+                                                min={0}
+                                                max={1440 /* 24 hours */}
+                                                label="Expected Time (Minutes)"
+                                                placeholder="How long does this activity take?"
+                                                defaultValue={params?.data?.timeInMin.toString()}
+                                                isClearable
+                                            />
+
+                                            <Input
+                                                name="costs"
+                                                className="mt-2"
+                                                type="number"
+                                                label="Expected Cost (€ / Person)"
+                                                placeholder="What are the costs of this activity?"
+                                                defaultValue={params?.data?.costsInCent.toString()}
+                                                isClearable
+                                            />
                                         </div>
                                         <div>
                                             <Input
@@ -247,44 +269,9 @@ export const TravelGuideEditor = (params: {
                                     <Divider className="mt-2"></Divider>
 
                                     <div>
-                                        <div className="flex py-2 px-1 justify-between">
-                                            <Checkbox
-                                                name="isPrivate"
-                                                defaultSelected={
-                                                    params?.data?.isPrivate
-                                                }
-                                                size="md"
-                                                classNames={{
-                                                    label: "text-small",
-                                                }}
-                                            >
-                                                Private
-                                                <br />
-                                                <span className="text-gray-500">
-                                                    A private Travel Guide can
-                                                    only be viewed with
-                                                    Password. The name is always
-                                                    public.
-                                                </span>
-                                            </Checkbox>
-                                        </div>
-
-                                        <Divider className="mt-2"></Divider>
-
                                         <div className="mt-4">
-                                            {params.type === "create" ? (
-                                                <>
-                                                    The password is required to
-                                                    edit your Travel Guides and
-                                                    to view it when it is
-                                                    private.
-                                                </>
-                                            ) : (
-                                                <>
-                                                    To update a Travel Guide,
-                                                    the Password is required.
-                                                </>
-                                            )}
+                                            To update a Travel Guide, the
+                                            Password is required.
                                         </div>
 
                                         {showUpdateError ? (
@@ -332,7 +319,7 @@ export const TravelGuideEditor = (params: {
                                                     type="submit"
                                                 >
                                                     <BootstrapIcon name="check-circle-fill"></BootstrapIcon>
-                                                    Create Travel Guide
+                                                    Create Activity
                                                 </Button>
                                             </>
                                         ) : (
@@ -342,7 +329,7 @@ export const TravelGuideEditor = (params: {
                                                     type="submit"
                                                 >
                                                     <BootstrapIcon name="check-circle-fill"></BootstrapIcon>
-                                                    Update Travel Guide
+                                                    Update Activity
                                                 </Button>
                                             </>
                                         )}

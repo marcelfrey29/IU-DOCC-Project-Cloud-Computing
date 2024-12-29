@@ -1,11 +1,11 @@
 meta {
-  name: Get Travel Guides by ID (Unauthorized)
+  name: Get all Activities (Private, Unauthorized)
   type: http
-  seq: 11
+  seq: 16
 }
 
 get {
-  url: {{baseUrl}}/travel-guides/:id
+  url: {{baseUrl}}/travel-guides/:id/activities
   body: none
   auth: none
 }
@@ -17,6 +17,10 @@ params:path {
 headers {
   content-type: application/json
   x-tg-secret: invalid-secret
+}
+
+vars:post-response {
+  actId: res.body[0].id
 }
 
 assert {

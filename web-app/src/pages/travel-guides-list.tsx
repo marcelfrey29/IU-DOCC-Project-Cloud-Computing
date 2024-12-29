@@ -106,7 +106,13 @@ export default function TravelGuidesListPage() {
                         <TableColumn>Category</TableColumn>
                         <TableColumn>Action</TableColumn>
                     </TableHeader>
-                    <TableBody>{travelGuideTableRows}</TableBody>
+                    <TableBody
+                        emptyContent={
+                            "No Travel Guides. Create a Travel Guide with the 'Create Travel Guide' button above."
+                        }
+                    >
+                        {travelGuideTableRows}
+                    </TableBody>
                 </Table>
             </section>
         </DefaultLayout>

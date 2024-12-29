@@ -1,0 +1,43 @@
+meta {
+  name: Create Activity (Private, Unauthorized)
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/travel-guides/:id/activities
+  body: json
+  auth: none
+}
+
+params:path {
+  id: {{id}}
+}
+
+headers {
+  content-type: application/json
+  x-tg-secret: invalid-secret
+}
+
+body:json {
+  {
+    "activity": {
+      "name": "Eiffel Tower",
+      "description": "View over Paris in 276m height.",
+      "category": 1,
+      "location": {
+        "street": "",
+        "zip": "",
+        "city": "Paris",
+        "state": "",
+        "country": "France"
+      },
+      "timeInMin":180,
+      "costsInCents":3600
+    }
+  }
+}
+
+assert {
+  res.status: eq 401
+}

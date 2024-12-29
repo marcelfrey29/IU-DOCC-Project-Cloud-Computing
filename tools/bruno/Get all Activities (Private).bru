@@ -1,0 +1,33 @@
+meta {
+  name: Get all Activities (Private)
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/travel-guides/:id/activities
+  body: none
+  auth: none
+}
+
+params:path {
+  id: {{id}}
+}
+
+headers {
+  content-type: application/json
+  x-tg-secret: ParisTrip2025
+}
+
+vars:post-response {
+  actId: res.body[0].id
+}
+
+assert {
+  res.status: eq 200
+  res.body[0].id: isDefined
+  res.body[0].name: eq Eiffel Tower
+  res.body[0].location.country: eq France
+  res.body[0].timeInMin: eq 180
+  res.body[0].costsInCent: eq 3600
+}
