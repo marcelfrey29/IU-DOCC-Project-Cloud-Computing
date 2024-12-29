@@ -174,3 +174,32 @@ func CreateActivityInDDB(activity *ActivityItem) (*ActivityItem, error) {
 	logger.Debug("Created Activity in DyanmoDB.", zap.String("hashId", activity.HashId), zap.String("rangeId", activity.RangeId))
 	return activity, nil
 }
+
+// Get all Travel Guides from the Database.
+func GetActivitiesFromDDB(tgId string) ([]ActivityItem, error) {
+	logger.Info("Getting for all Activities for Travel Guides from DynamoDB.", zap.String("id", tgId))
+
+	var attributeValues map[string]types.AttributeValue = make(map[string]types.AttributeValue)
+	attributeValues[":tgId"] = &types.AttributeValueMemberS{
+		Value: tgId,
+	}
+
+	response, err := ddbClient.Query(context.TODO(), &dynamodb.QueryInput{
+		TableName:                 aws.String(tableName),
+		KeyConditionExpression:    aws.String("hashId = :tgId"),
+		ExpressionAttributeValues: attributeValues,
+	})
+	if err != nil {
+		logger.Error("Error while getting all Activities for Travel Guides from DynamoDB.", zap.String("error", err.Error()))
+		return nil, err
+	}
+
+	var travelGuides []ActivityItem
+	for _, travelGuide := range response.Items {
+		tgi := new(ActivityItem)
+		attributevalue.UnmarshalMap(travelGuide, tgi)
+		travelGuides = append(travelGuides, *tgi)
+	}
+
+	return travelGuides, nil
+}

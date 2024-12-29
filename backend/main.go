@@ -175,14 +175,19 @@ func main() {
 		}
 
 		// Create Activity
-		activities, err := createActivity(tgId, data.Activity)
+		_, err = createActivity(tgId, data.Activity)
 		if err != nil {
-			logger.Error("Error while creating Travel Guide.", zap.String("error", err.Error()))
-			return c.Status(500).JSON(map[string]string{"message": "Error while creating Travel Guide."})
+			logger.Error("Error while creating Activity for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while creating Activity."})
 		}
 		logger.Info("Created Activity.")
 
-		// FIXME: Return list
+		activities, err := getActivities(tgId)
+		if err != nil {
+			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting all Activities for the Travel Guide."})
+		}
+		logger.Info("Got all Activities of Travel Guide.")
 		return c.Status(201).JSON(activities)
 	})
 
@@ -379,4 +384,23 @@ func createActivity(tgId string, activity Activity) (Activity, error) {
 	act := item.Activity
 	logger.Debug("Created Activity.", zap.Any("activity", act))
 	return act, nil
+}
+
+// Get all Activites.
+func getActivities(tgId string) ([]Activity, error) {
+	logger.Info("Get all Activities for Travel Guide.", zap.String("id", tgId))
+	items, err := GetActivitiesFromDDB("ACT#" + tgId)
+
+	if err != nil {
+		logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+		return nil, err
+	}
+
+	var travelGuides []Activity
+	for _, item := range items {
+		travelGuides = append(travelGuides, item.Activity)
+	}
+	logger.Info("Got all Activities for Travel Guides.", zap.Int("count", len(travelGuides)))
+
+	return travelGuides, nil
 }
