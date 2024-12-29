@@ -404,7 +404,11 @@ export default function TravelGuideDetailPage() {
                                                     Actions
                                                 </TableColumn>
                                             </TableHeader>
-                                            <TableBody>
+                                            <TableBody
+                                                emptyContent={
+                                                    "No Activities. Create your first Activity using the 'Add Activity' button below."
+                                                }
+                                            >
                                                 {activityTableRows}
                                             </TableBody>
                                         </Table>
