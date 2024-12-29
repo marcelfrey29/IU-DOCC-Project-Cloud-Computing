@@ -39,3 +39,24 @@ export async function createActivity(
     const body = await response.json();
     return body;
 }
+
+export async function getActivities(
+    travelGuideId: string,
+    secret?: string,
+): Promise<Activity[]> {
+    const response = await fetch(
+        "http://localhost:9090/travel-guides/" + travelGuideId + "/activities",
+        {
+            method: "GET",
+            headers: new Headers({
+                "content-type": "application/json",
+                ...(secret !== undefined ? { "x-tg-secret": secret } : {}),
+            }),
+        },
+    );
+    if (response.status !== 200) {
+        throw new Error();
+    }
+    const body = await response.json();
+    return body;
+}

@@ -3,6 +3,7 @@ import { BootstrapIcon } from "@/components/icons";
 import { TravelGuideEditor } from "@/components/travel-guide-editor";
 import { categoryConfig } from "@/config/category";
 import DefaultLayout from "@/layouts/default";
+import { Activity, getActivities } from "@/service/Activity";
 import {
     deleteTravelGuideById,
     getTravelGuideById,
@@ -19,6 +20,14 @@ import {
     ModalHeader,
     useDisclosure,
 } from "@nextui-org/modal";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+} from "@nextui-org/table";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -27,6 +36,7 @@ export default function TravelGuideDetailPage() {
     const routeTo = useNavigate();
     const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
     const [travelGuide, setTravelGuide] = useState(null as TravelGuide | null);
+    const [activities, setActivities] = useState([] as Activity[]);
     const [authRequited, setAuthRequired] = useState(true);
     const [deleteError, setDeleteError] = useState(false);
     const [secret, setSecret] = useState("");
@@ -39,10 +49,59 @@ export default function TravelGuideDetailPage() {
             setAuthRequired(true);
             setSecret("");
         }
+
+        try {
+            setActivities(await getActivities(id ?? "unknown", secret));
+        } catch (e) {
+            // FIXME: Add error handling
+        }
     };
     useEffect(() => {
         getTravelGuideData();
     }, []);
+
+    const activityTableRows = activities.map((activity) => {
+        return (
+            <>
+                <TableRow key={activity.id}>
+                    <TableCell>
+                        <b>{activity.name}</b>
+                    </TableCell>
+                    <TableCell>{activity.description}</TableCell>
+                    <TableCell>
+                        {
+                            categoryConfig.find(
+                                (c) => c.key === activity.category,
+                            )?.label
+                        }
+                    </TableCell>
+                    <TableCell>
+                        {[
+                            activity.location.street,
+                            `${activity.location.zip ?? ""} ${activity.location.city ?? ""}`.trim(),
+                            activity.location.state,
+                            activity.location.country,
+                        ]
+                            .filter((e) => e !== undefined && e !== "")
+                            .join(" ▪ ")}
+                    </TableCell>
+                    <TableCell>
+                        {activity.timeInMin !== undefined
+                            ? `${activity.timeInMin} min`
+                            : ""}
+                    </TableCell>
+                    <TableCell>
+                        {activity.costsInCent !== undefined
+                            ? `${activity.costsInCent / 100} €`
+                            : ""}
+                    </TableCell>
+                    <TableCell>
+                        <div></div>
+                    </TableCell>
+                </TableRow>
+            </>
+        );
+    });
 
     const deleteTravelGuide = async () => {
         try {
@@ -324,11 +383,37 @@ export default function TravelGuideDetailPage() {
                                     <h2 className="text-2xl">
                                         <b>Activities</b>
                                     </h2>
+                                    <div className="mt-2">
+                                        <Table aria-label="Example static collection table">
+                                            <TableHeader>
+                                                <TableColumn>Name</TableColumn>
+                                                <TableColumn>
+                                                    Description
+                                                </TableColumn>
+                                                <TableColumn>
+                                                    Category
+                                                </TableColumn>
+                                                <TableColumn>
+                                                    Location
+                                                </TableColumn>
+                                                <TableColumn>Time</TableColumn>
+                                                <TableColumn>
+                                                    Costs/Person
+                                                </TableColumn>
+                                                <TableColumn>
+                                                    Actions
+                                                </TableColumn>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {activityTableRows}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                     <ActivityEditor
                                         type="create"
                                         travelGuideId={id ?? "unknown"}
-                                        onSuccess={() => {
-                                            /* TODO: add list update */
+                                        onSuccess={(activities) => {
+                                            setActivities(activities);
                                         }}
                                     ></ActivityEditor>
                                 </section>
