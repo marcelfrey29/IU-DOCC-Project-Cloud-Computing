@@ -1,7 +1,7 @@
 meta {
-  name: Create Activity
+  name: Create Activity (Private, Unauthorized)
   type: http
-  seq: 6
+  seq: 14
 }
 
 post {
@@ -16,7 +16,7 @@ params:path {
 
 headers {
   content-type: application/json
-  x-tg-secret: ParisTrip2025
+  x-tg-secret: invalid-secret
 }
 
 body:json {
@@ -33,20 +33,11 @@ body:json {
         "country": "France"
       },
       "timeInMin":180,
-      "costsInCent":3600
+      "costsInCents":3600
     }
   }
 }
 
-vars:post-response {
-  actId: res.body[0].id
-}
-
 assert {
-  res.status: eq 201
-  res.body[0].id: isDefined
-  res.body[0].name: eq Eiffel Tower
-  res.body[0].location.country: eq France
-  res.body[0].timeInMin: eq 180
-  res.body[0].costsInCent: eq 3600
+  res.status: eq 401
 }

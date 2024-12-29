@@ -157,7 +157,7 @@ func main() {
 		auth := c.Get("x-tg-secret")
 
 		// Check Access
-		accessErr := checkTravelGuideAccess(tgId, auth)
+		accessErr := checkTravelGuideAccess(tgId, auth, true)
 		if accessErr != nil {
 			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
 			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
@@ -179,7 +179,7 @@ func main() {
 		auth := c.Get("x-tg-secret")
 
 		// Check Access
-		accessErr := checkTravelGuideAccess(tgId, auth)
+		accessErr := checkTravelGuideAccess(tgId, auth, false)
 		if accessErr != nil {
 			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
 			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
@@ -364,12 +364,16 @@ func getBcrypSecretFromPlaintext(secret string) string {
 
 // Check if a user has access to a Travel Guide.
 // Access is allowed if this function returns `nil`.
-func checkTravelGuideAccess(travelGuideId string, secret string) error {
+func checkTravelGuideAccess(travelGuideId string, secret string, readOnly bool) error {
 	// Get Travel Guide
 	item, err := GetTravelGuideFromDDB(travelGuideId)
 	if err != nil {
 		logger.Error("Error while getting Travel Guide.", zap.String("error", err.Error()))
 		return err
+	}
+	if readOnly && item.TravelGuide.Private == false {
+		logger.Info("Skipping secret check for read-only access to public travel guide.", zap.Bool("readOnly", readOnly), zap.Bool("isPrivate", item.TravelGuide.Private))
+		return nil
 	}
 	logger.Debug("Got Travel Guide from DynamoDB, performing secret check.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
 
