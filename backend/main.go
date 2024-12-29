@@ -422,7 +422,7 @@ func getActivities(tgId string) ([]Activity, error) {
 		return nil, err
 	}
 
-	var travelGuides []Activity
+	var travelGuides []Activity = []Activity{}
 	for _, item := range items {
 		travelGuides = append(travelGuides, item.Activity)
 	}
