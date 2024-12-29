@@ -1,0 +1,46 @@
+meta {
+  name: Create Activity (Unauthorized)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/travel-guides/:id/activities
+  body: json
+  auth: none
+}
+
+params:path {
+  id: {{id}}
+}
+
+headers {
+  content-type: application/json
+  x-tg-secret: ParisTrip2025
+}
+
+body:json {
+  {
+    "activity": {
+      "name": "Eiffel Tower",
+      "description": "View Paris over Paris in 276m height.",
+      "category": 1,
+      "location": {
+        "street": "",
+        "zip": "",
+        "city": "Paris",
+        "state": "",
+        "country": "France"
+      },
+      "timeInMin":180,
+      "costsInCents":3600
+    }
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body[0].id: isDefined
+  res.body[0].name: eq Eiffel Tower
+  res.body[0].location.country: eq France
+}

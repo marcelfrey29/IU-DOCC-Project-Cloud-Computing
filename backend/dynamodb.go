@@ -154,3 +154,23 @@ func DeleteGuideFromDDB(id string) error {
 
 	return nil
 }
+
+// Create a new Activity in the Database.
+func CreateActivityInDDB(activity *ActivityItem) (*ActivityItem, error) {
+	logger.Info("Creating new Travel Guide in DynamoDB.", zap.String("hashId", activity.HashId), zap.String("rangeId", activity.RangeId))
+
+	itemToStore, _ := attributevalue.MarshalMap(activity)
+
+	_, err := ddbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName:           aws.String(tableName),
+		Item:                itemToStore,
+		ConditionExpression: aws.String("attribute_not_exists(hashId) and attribute_not_exists(rangeId)"),
+	})
+	if err != nil {
+		logger.Error("Error while creating Activity in DyanmoDB.", zap.String("error", err.Error()))
+		return nil, err
+	}
+
+	logger.Debug("Created Activity in DyanmoDB.", zap.String("hashId", activity.HashId), zap.String("rangeId", activity.RangeId))
+	return activity, nil
+}
