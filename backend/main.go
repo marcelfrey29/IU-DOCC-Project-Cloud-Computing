@@ -152,6 +152,28 @@ func main() {
 	})
 
 	// Create an Activity in a Travel Guide.
+	app.Get("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+		tgId := c.Params("id")
+		auth := c.Get("x-tg-secret")
+
+		// Check Access
+		accessErr := checkTravelGuideAccess(tgId, auth)
+		if accessErr != nil {
+			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		}
+
+		// Get all Activities
+		activities, err := getActivities(tgId)
+		if err != nil {
+			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting all Activities for the Travel Guide."})
+		}
+		logger.Info("Got all Activities of Travel Guide.")
+		return c.Status(200).JSON(activities)
+	})
+
+	// Create an Activity in a Travel Guide.
 	app.Post("travel-guides/:id/activities", func(c *fiber.Ctx) error {
 		tgId := c.Params("id")
 		auth := c.Get("x-tg-secret")
