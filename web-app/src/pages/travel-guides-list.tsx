@@ -104,7 +104,7 @@ export default function TravelGuidesListPage() {
                 </div> */}
             </section>
 
-            <section className="mt-12">
+            <section className="mt-6">
                 <Table aria-label="Example static collection table">
                     <TableHeader>
                         <TableColumn>Visibility</TableColumn>

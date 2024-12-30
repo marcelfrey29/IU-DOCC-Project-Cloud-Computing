@@ -53,7 +53,7 @@ export const ActivityEditor = (params: {
                     data.category ?? Category.MIX,
                 ) as unknown as Category,
                 costsInCent: parseFloat(data.costs) * 100,
-                timeInMin: parseInt(data.costs),
+                timeInMin: parseInt(data.time),
             },
         };
         const secret = data.password;

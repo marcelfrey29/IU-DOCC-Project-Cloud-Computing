@@ -4,6 +4,10 @@
 [![Go CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml)
 [![SAST](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml/badge.svg)](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml)
 
+## Travel Guides
+
+![Application Demo](docs/assets/demo.png)
+
 ## Documentation
 
 See [Docs](docs/docs.md)
@@ -29,6 +33,9 @@ See [Docs](docs/docs.md)
 ## Running the Project
 
 All services can be managed at once via Docker Compose.
+
+> [!TIP]
+> Quick-Start: Run `docker compose up --build -d`
 
 ```bash
 # Run latest version of all services
