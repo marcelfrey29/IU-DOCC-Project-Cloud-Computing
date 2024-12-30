@@ -212,6 +212,7 @@ func main() {
 		logger.Info("Got all Activities of Travel Guide.")
 		return c.Status(201).JSON(activities)
 	})
+
 	// Update an Activity in a Travel Guide.
 	app.Put("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
 		tgId := c.Params("tgid")
@@ -244,6 +245,37 @@ func main() {
 		}
 		logger.Info("Updated Activity.")
 
+		activities, err := getActivities(tgId)
+		if err != nil {
+			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting all Activities for the Travel Guide."})
+		}
+		logger.Info("Got all Activities of Travel Guide.")
+		return c.Status(200).JSON(activities)
+	})
+
+	// Delete an Activity from a Travel Guide.
+	app.Delete("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
+		tgId := c.Params("tgId")
+		actId := c.Params("actId")
+		auth := c.Get("x-tg-secret")
+
+		// Check Access
+		accessErr := checkTravelGuideAccess(tgId, auth, false)
+		if accessErr != nil {
+			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		}
+
+		// Delete Activity
+		err := deleteActivity(tgId, actId)
+		if err != nil {
+			logger.Error("Error while deleting Activity.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while deleting Activity."})
+		}
+		logger.Info("Deleted Activity.")
+
+		// Get List of Activities
 		activities, err := getActivities(tgId)
 		if err != nil {
 			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
@@ -468,6 +500,16 @@ func updateActivity(id string, actId string, activity *Activity) (Activity, erro
 	}
 
 	return updatedItem.Activity, nil
+}
+
+// Delete an Activity.
+func deleteActivity(tgId string, actId string) error {
+	err := DeleteActivityFromDDB(tgId, actId)
+	if err != nil {
+		logger.Error("Error while deleting Activity.", zap.String("error", err.Error()))
+		return err
+	}
+	return nil
 }
 
 // Get all Activites.

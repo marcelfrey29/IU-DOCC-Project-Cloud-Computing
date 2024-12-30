@@ -1,21 +1,23 @@
 meta {
-  name: Delete Travel Guides by ID (Public, Unauthorized)
+  name: Delete Activity (Public, Unauthorized)
   type: http
-  seq: 12
+  seq: 10
 }
 
 delete {
-  url: {{baseUrl}}/travel-guides/:id
+  url: {{baseUrl}}/travel-guides/:id/activities/:actId
   body: none
   auth: none
 }
 
 params:path {
+  actId: {{actId}}
   id: {{id}}
 }
 
 headers {
   content-type: application/json
+  x-tg-secret: invalid-secret
 }
 
 assert {

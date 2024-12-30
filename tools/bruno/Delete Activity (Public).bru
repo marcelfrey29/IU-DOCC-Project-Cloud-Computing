@@ -1,16 +1,17 @@
 meta {
-  name: Delete Travel Guides by ID (Private)
+  name: Delete Activity (Public)
   type: http
-  seq: 27
+  seq: 11
 }
 
 delete {
-  url: {{baseUrl}}/travel-guides/:id
+  url: {{baseUrl}}/travel-guides/:id/activities/:actId
   body: none
   auth: none
 }
 
 params:path {
+  actId: {{actId}}
   id: {{id}}
 }
 
@@ -21,4 +22,5 @@ headers {
 
 assert {
   res.status: eq 200
+  res.body: isArray []
 }
