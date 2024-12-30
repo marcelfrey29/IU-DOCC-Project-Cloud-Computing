@@ -3,6 +3,7 @@ import {
     Activity,
     createActivity,
     CreateActivityRequest,
+    updateActivity,
 } from "@/service/Activity";
 import { Category } from "@/service/Shared";
 import { Alert } from "@nextui-org/alert";
@@ -66,7 +67,12 @@ export const ActivityEditor = (params: {
                     secret,
                 );
             } else {
-                // TODO: Update Activity
+                activity = await updateActivity(
+                    params.travelGuideId,
+                    params.data?.id ?? "unknown",
+                    createActivityRequest,
+                    secret,
+                );
             }
             params.onSuccess(activity);
             onClose();
