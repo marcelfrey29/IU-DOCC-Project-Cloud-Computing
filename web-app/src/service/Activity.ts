@@ -93,3 +93,31 @@ export async function getActivities(
     const body = await response.json();
     return body;
 }
+
+export async function deleteActivity(
+    travelGuideId: string,
+    activityId: string,
+    secret: string,
+): Promise<Activity[]> {
+    const response = await fetch(
+        "http://localhost:9090/travel-guides/" +
+            travelGuideId +
+            "/activities/" +
+            activityId,
+        {
+            method: "DELETE",
+            headers: new Headers({
+                "content-type": "application/json",
+                "x-tg-secret": secret,
+            }),
+        },
+    );
+    if (response.status === 401) {
+        throw new UnauthorizedError();
+    }
+    if (response.status !== 200) {
+        throw new Error();
+    }
+    const body = await response.json();
+    return body;
+}

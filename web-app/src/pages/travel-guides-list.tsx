@@ -47,10 +47,17 @@ export default function TravelGuidesListPage() {
                     </TableCell>
                     <TableCell>{tg.description}</TableCell>
                     <TableCell>
-                        {
-                            categoryConfig.find((c) => c.key === tg.category)
-                                ?.label
-                        }
+                        {tg.isPrivate === true ? (
+                            <span></span>
+                        ) : (
+                            <span>
+                                {
+                                    categoryConfig.find(
+                                        (c) => c.key === tg.category,
+                                    )?.label
+                                }
+                            </span>
+                        )}
                     </TableCell>
                     <TableCell>
                         <Button

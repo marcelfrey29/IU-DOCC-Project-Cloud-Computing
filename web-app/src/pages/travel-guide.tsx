@@ -1,3 +1,4 @@
+import { ActivityDeleteControl } from "@/components/activity-delete";
 import { ActivityEditor } from "@/components/activity-editor";
 import { BootstrapIcon } from "@/components/icons";
 import { TravelGuideEditor } from "@/components/travel-guide-editor";
@@ -86,12 +87,10 @@ export default function TravelGuideDetailPage() {
                             .join(" ▪ ")}
                     </TableCell>
                     <TableCell>
-                        {activity.timeInMin !== undefined
-                            ? `${activity.timeInMin} min`
-                            : ""}
+                        {activity.timeInMin ? `${activity.timeInMin} min` : ""}
                     </TableCell>
                     <TableCell>
-                        {activity.costsInCent !== undefined
+                        {activity.costsInCent
                             ? `${activity.costsInCent / 100} €`
                             : ""}
                     </TableCell>
@@ -105,6 +104,13 @@ export default function TravelGuideDetailPage() {
                                     setActivities(activities);
                                 }}
                             ></ActivityEditor>
+                            <ActivityDeleteControl
+                                tgId={id ?? "unknown"}
+                                actId={activity.id ?? "unknown"}
+                                onSuccess={(activities) => {
+                                    setActivities(activities);
+                                }}
+                            ></ActivityDeleteControl>
                         </div>
                     </TableCell>
                 </TableRow>

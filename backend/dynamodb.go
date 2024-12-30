@@ -223,3 +223,27 @@ func GetActivitiesFromDDB(tgId string) ([]ActivityItem, error) {
 
 	return travelGuides, nil
 }
+
+// Delete an Activity from the Database.
+func DeleteActivityFromDDB(tgId string, actId string) error {
+	logger.Info("Delete Activity by ID.", zap.String("tgId", tgId), zap.String("actId", actId))
+
+	var key map[string]types.AttributeValue = make(map[string]types.AttributeValue)
+	key["hashId"] = &types.AttributeValueMemberS{
+		Value: "ACT#" + tgId,
+	}
+	key["rangeId"] = &types.AttributeValueMemberS{
+		Value: actId,
+	}
+
+	_, err := ddbClient.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		TableName: aws.String(tableName),
+		Key:       key,
+	})
+	if err != nil {
+		logger.Error("Error while deleting Activity from DynamoDB.", zap.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
