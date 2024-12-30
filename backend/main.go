@@ -306,7 +306,7 @@ func getTravelGuides() ([]TravelGuide, error) {
 
 	// Travel Guide Items must be transformed to Travel Guides.
 	// In addition, information in private Travel Guides must be removed.
-	var travelGuides []TravelGuide
+	var travelGuides []TravelGuide = []TravelGuide{}
 	for _, item := range items {
 		if item.TravelGuide.Private {
 			logger.Debug("Travel Guide is Private, hiding all private information.", zap.String("hashId", item.HashId), zap.String("rangeId", item.RangeId))
