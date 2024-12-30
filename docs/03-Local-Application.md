@@ -94,3 +94,30 @@ Simple mockups for the User Interface.
 
 ![Mockups of the Web App](assets/web-app-mockup.svg)
 
+## Implementation
+
+- Basic setup of the frontend- and backend projects so that we have running _hello world_-versions
+- Docker and Cocker Compose setup, including the DynamoDB Database so that the applications can run in containers
+    - Docker Builder-Pattern is used
+    - Backend: Debian Linux where the built binary is started
+    - Frontend: nginx webserver which serves the static website
+    - Database: DynamoDB from Docker Hub
+- Setup of additional tooling
+    - GitHub Actions CI/CD to build and test the `main`-branch as well as Pull Requests against `main`
+    - GitHub Dependabot for automatic dependency updates (Pull Request for new versions of npm packges, go modules, docker images, and GitHub Action actions)
+- Setup of Security Tooling (SAST) to prevent typical Security Issues (e.g. OWASP Top 10) 
+    - Applying latest Cyber Security Learnings
+- DynamoDB Design
+- UI Design
+- Implementation ([Milestone: Local Implementation](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/milestone/1))
+    - Ticket-based
+    - API-first
+        - Bruno HTTP Collection for Testing (can be found in `/tools/bruno`)
+        - Run all Requests as _Integration Test_ (Not yet part of CI, see [Issue #68](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/issues/68))
+    - Add Frontend for APIs (inspired by Mockups)
+    - Git Feature-Branches (short-living)
+- Refactorings
+    - Example: Extract Modal to Create a Travel Guide into own component and add `create` and `update` mode
+        - Before: Embedded in List Page
+        - Create/Update is mostly the same (except a few label names, prefill on update, and the method to be called)
+        - Control via Property

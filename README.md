@@ -34,6 +34,9 @@ See [Docs](docs/docs.md)
 
 All services can be managed at once via Docker Compose.
 
+> [!TIP]
+> Quick-Start: Run `docker compose up --build -d`
+
 ```bash
 # Run latest version of all services
 docker compose up --build
