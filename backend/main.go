@@ -212,6 +212,46 @@ func main() {
 		logger.Info("Got all Activities of Travel Guide.")
 		return c.Status(201).JSON(activities)
 	})
+	// Update an Activity in a Travel Guide.
+	app.Put("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
+		tgId := c.Params("tgid")
+		actId := c.Params("actId")
+		auth := c.Get("x-tg-secret")
+
+		// Check Access
+		accessErr := checkTravelGuideAccess(tgId, auth, false)
+		if accessErr != nil {
+			logger.Warn("The Secret is not valid.", zap.String("id", tgId), zap.String("error", accessErr.Error()))
+			return c.Status(401).JSON(map[string]string{"message": "The Secret is not valid."})
+		}
+
+		// Validate data
+		data := new(CreateActivityRequest)
+		err := c.BodyParser(data)
+		if err != nil {
+			logger.Error("Error while parsing body.", zap.String("error", err.Error()))
+		}
+		if validationErr := validate.Struct(data); validationErr != nil {
+			logger.Warn("Invalid Request Data.", zap.String("error", validationErr.Error()))
+			return c.Status(400).JSON(map[string]string{"message": "Invalid Request Data."})
+		}
+
+		// Update Activity
+		_, err = updateActivity(tgId, actId, &data.Activity)
+		if err != nil {
+			logger.Error("Error while updating Activity.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while updating Activity."})
+		}
+		logger.Info("Updated Activity.")
+
+		activities, err := getActivities(tgId)
+		if err != nil {
+			logger.Error("Error while getting Activities for Travel Guide.", zap.String("error", err.Error()))
+			return c.Status(500).JSON(map[string]string{"message": "Error while getting all Activities for the Travel Guide."})
+		}
+		logger.Info("Got all Activities of Travel Guide.")
+		return c.Status(200).JSON(activities)
+	})
 
 	app.Get("/:name", func(c *fiber.Ctx) error {
 		return c.SendString("Hello " + c.Params("name"))
@@ -410,6 +450,24 @@ func createActivity(tgId string, activity Activity) (Activity, error) {
 	act := item.Activity
 	logger.Debug("Created Activity.", zap.Any("activity", act))
 	return act, nil
+}
+
+// Update an Activity.
+func updateActivity(id string, actId string, activity *Activity) (Activity, error) {
+	// Re-set Id and create Item
+	activity.Id = actId
+	item := ActivityItem{
+		HashId:   "ACT#" + id,
+		RangeId:  actId,
+		Activity: *activity,
+	}
+	updatedItem, err := UpdateActivityInDDB(&item)
+	if err != nil {
+		logger.Error("Error while updating Activity.", zap.String("error", err.Error()))
+		return Activity{}, err
+	}
+
+	return updatedItem.Activity, nil
 }
 
 // Get all Activites.
