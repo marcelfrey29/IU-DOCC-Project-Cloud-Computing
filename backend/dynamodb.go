@@ -175,6 +175,26 @@ func CreateActivityInDDB(activity *ActivityItem) (*ActivityItem, error) {
 	return activity, nil
 }
 
+// Update an Activity in the Database
+func UpdateActivityInDDB(activity *ActivityItem) (*ActivityItem, error) {
+	logger.Info("Updating Activity in DynamoDB.", zap.String("hashId", activity.HashId), zap.String("rangeId", activity.RangeId))
+
+	itemToStore, _ := attributevalue.MarshalMap(activity)
+
+	_, err := ddbClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName:           aws.String(tableName),
+		Item:                itemToStore,
+		ConditionExpression: aws.String("attribute_exists(hashId) AND attribute_exists(rangeId)"),
+	})
+	if err != nil {
+		logger.Error("Error while updating Activity in DyanmoDB.", zap.String("error", err.Error()))
+		return nil, err
+	}
+
+	logger.Debug("Updated Activity in DyanmoDB.", zap.String("hashId", activity.HashId), zap.String("rangeId", activity.RangeId))
+	return activity, nil
+}
+
 // Get all Travel Guides from the Database.
 func GetActivitiesFromDDB(tgId string) ([]ActivityItem, error) {
 	logger.Info("Getting for all Activities for Travel Guides from DynamoDB.", zap.String("id", tgId))

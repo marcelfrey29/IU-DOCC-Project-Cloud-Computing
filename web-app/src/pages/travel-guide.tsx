@@ -96,7 +96,16 @@ export default function TravelGuideDetailPage() {
                             : ""}
                     </TableCell>
                     <TableCell>
-                        <div></div>
+                        <div className="">
+                            <ActivityEditor
+                                type="update"
+                                travelGuideId={id ?? "unknown"}
+                                data={activity}
+                                onSuccess={(activities) => {
+                                    setActivities(activities);
+                                }}
+                            ></ActivityEditor>
+                        </div>
                     </TableCell>
                 </TableRow>
             </>
