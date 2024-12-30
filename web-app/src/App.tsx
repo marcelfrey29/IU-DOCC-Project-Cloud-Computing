@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 
 import AboutPage from "@/pages/about";
 import IndexPage from "@/pages/index";
+import NotFoundPage from "./pages/404";
 import TravelGuideDetailPage from "./pages/travel-guide";
 import TravelGuidesListPage from "./pages/travel-guides-list";
 
@@ -15,6 +16,8 @@ function App() {
                 element={<TravelGuideDetailPage />}
                 path="/travel-guides/:id"
             />
+            {/* 404 Fallback */}
+            <Route element={<NotFoundPage />} path="/*" />
         </Routes>
     );
 }
