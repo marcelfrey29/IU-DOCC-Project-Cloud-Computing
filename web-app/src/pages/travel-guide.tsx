@@ -87,12 +87,10 @@ export default function TravelGuideDetailPage() {
                             .join(" ▪ ")}
                     </TableCell>
                     <TableCell>
-                        {activity.timeInMin !== undefined
-                            ? `${activity.timeInMin} min`
-                            : ""}
+                        {activity.timeInMin ? `${activity.timeInMin} min` : ""}
                     </TableCell>
                     <TableCell>
-                        {activity.costsInCent !== undefined
+                        {activity.costsInCent
                             ? `${activity.costsInCent / 100} €`
                             : ""}
                     </TableCell>
