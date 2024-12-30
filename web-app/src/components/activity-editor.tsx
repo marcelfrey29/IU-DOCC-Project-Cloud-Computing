@@ -52,7 +52,7 @@ export const ActivityEditor = (params: {
                 category: parseInt(
                     data.category ?? Category.MIX,
                 ) as unknown as Category,
-                costsInCent: parseInt(data.costs),
+                costsInCent: parseFloat(data.costs) * 100,
                 timeInMin: parseInt(data.costs),
             },
         };
@@ -182,7 +182,11 @@ export const ActivityEditor = (params: {
                                                 type="number"
                                                 label="Expected Cost (€ / Person)"
                                                 placeholder="What are the costs of this activity?"
-                                                defaultValue={params?.data?.costsInCent.toString()}
+                                                defaultValue={(
+                                                    (params?.data
+                                                        ?.costsInCent ?? 0) /
+                                                    100
+                                                )?.toString()}
                                                 isClearable
                                             />
                                         </div>
