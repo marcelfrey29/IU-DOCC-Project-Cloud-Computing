@@ -78,7 +78,7 @@ With this query requirements in mind, we can design the data model (Table).
 1. Get a single Travel Guide
     - Get with `Hash="TG"` and `Range="TG_<tg-id>"` (ID of Travel Guide)
 
-> [!danger]
+> [!CAUTION]
 > **The way Travel Guides are stored increases the risk of a Hot Partition** because the Hash-Key is always `TG` which means there is no distribution across partitions.
 >
 > However, there will me way more Activities than Travel Guides because each Travel Guide consits of multiple Activities. 
