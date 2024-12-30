@@ -78,15 +78,6 @@ export function Footer() {
                             Imprint
                         </Link>
                     </p>
-                    <p>
-                        <Link
-                            href="/imprint"
-                            className="text-default-500"
-                            underline="hover"
-                        >
-                            Contact
-                        </Link>
-                    </p>
                 </div>
             </div>
             <Divider className="my-4" />
