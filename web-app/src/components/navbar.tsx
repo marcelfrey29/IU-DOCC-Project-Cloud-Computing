@@ -13,21 +13,35 @@ import clsx from "clsx";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
+import { BootstrapIcon } from "./icons";
 
 export const Navbar = () => {
     return (
         <NextUINavbar maxWidth="xl" position="sticky">
-            <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+            {/* Mobile Menu */}
+            <NavbarMenu>
+                <div className="mx-4 mt-2 flex flex-col gap-2">
+                    {siteConfig.navItems.map((item, index) => (
+                        <NavbarMenuItem key={`${item}-${index}`}>
+                            <Link color="foreground" href={item.href} size="lg">
+                                {item.label}
+                            </Link>
+                        </NavbarMenuItem>
+                    ))}
+                </div>
+            </NavbarMenu>
+
+            {/* Main-Navigation */}
+            <NavbarContent className="basis-full" justify="start">
+                <NavbarMenuToggle className="md:hidden" />
+
                 <NavbarBrand className="gap-3 max-w-fit">
-                    <Link
-                        className="flex justify-start items-center gap-1"
-                        color="foreground"
-                        href="/"
-                    >
-                        <p className="font-bold text-inherit">ACME</p>
-                    </Link>
+                    <p className="font-bold text-inherit text-4xl">
+                        <BootstrapIcon name="luggage-fill"></BootstrapIcon>
+                    </p>
                 </NavbarBrand>
-                <div className="hidden lg:flex gap-4 justify-start ml-2">
+
+                <div className="hidden md:flex gap-4 justify-start ml-2">
                     {siteConfig.navItems.map((item) => (
                         <NavbarItem key={item.href}>
                             <Link
@@ -45,31 +59,10 @@ export const Navbar = () => {
                 </div>
             </NavbarContent>
 
-            <NavbarContent
-                className="hidden sm:flex basis-1/5 sm:basis-full"
-                justify="end"
-            >
-                <NavbarItem className="hidden sm:flex gap-2">
-                    <ThemeSwitch />
-                </NavbarItem>
-            </NavbarContent>
-
-            <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
+            {/* Action (right) */}
+            <NavbarContent className="basis-1 pl-4" justify="end">
                 <ThemeSwitch />
-                <NavbarMenuToggle />
             </NavbarContent>
-
-            <NavbarMenu>
-                <div className="mx-4 mt-2 flex flex-col gap-2">
-                    {siteConfig.navItems.map((item, index) => (
-                        <NavbarMenuItem key={`${item}-${index}`}>
-                            <Link href="#" size="lg">
-                                {item.label}
-                            </Link>
-                        </NavbarMenuItem>
-                    ))}
-                </div>
-            </NavbarMenu>
         </NextUINavbar>
     );
 };
