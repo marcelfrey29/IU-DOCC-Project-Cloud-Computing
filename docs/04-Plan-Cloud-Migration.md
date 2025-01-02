@@ -77,8 +77,9 @@ Migrate the local version of the application to the AWS Cloud.
 ![Rehost Architecture Diagram](assets/migration-rehost.svg)
 
 - **Sclalability and Fit-to-Workload**:
-    - Scaling is not possible out of the box (DB must be shared and can't be part of the stack)
+    - Horizonal Scaling is not possible out of the box (DB must be shared and can't be part of the stack)
     - We have only a single instance all the time
+    - Vertical Scaling is possible (more CPU/RAM)
 - **Availability**: Single host is single point of failure, no redundancy 
 - **Security**:
     - Database/Data on public facting instance (compromised host, compromised data)
@@ -166,4 +167,21 @@ Migrate the local version of the application to the AWS Cloud.
 - **Risk of Lock-In**: Yes, high
     - Solution uses only AWS Services
 
+## Evaluation
 
+- Score: 1-5 Points (1=Worst, 5=Best)
+- Sum of Score
+
+| Category          | Rehost | Replatform | Refactor |
+| :---------------- | :----- | :--------- | :------- |
+| Scalability       | 2      | 4          | 5        |
+| Availability      | 1      | 5          | 5        |
+| Security          | 2      | 4          | 5        |
+| Costs             | 1      | 3          | 5        |
+| Operational Model | 3      | 4          | 5        |
+| Lock-In           | 5      | 3          | 1        |
+| -----             | -----  | -----      | -----    |
+| **Sum**           | **14** | **23**     | **26**   |
+
+Refactoring the application to a Serverless solution is best migration strategy for our application.
+This solution will combine the highest availability and scalability with the lowest costs. 
