@@ -2,6 +2,18 @@
 
 Migrate the local version of the application to the AWS Cloud.
 
+## Process
+
+- Select evaluation criteria
+- Identify different migration strategies
+    - Cloud Service Model
+    - Architecure Diagram
+    - AWS Services
+    - Evaluate Costs with AWS Pricing calculator
+- Compare different migration strategies based on the criteria (Evaluation)
+- Select migration strategy: Refactor to Serverless
+- Create detailed architecture diagram and tickets
+
 ## Criteria
 
 - Sclalability and Fit-to-Workload
