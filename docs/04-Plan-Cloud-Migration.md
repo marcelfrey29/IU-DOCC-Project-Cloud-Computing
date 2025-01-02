@@ -33,6 +33,12 @@ Migrate the local version of the application to the AWS Cloud.
 > For example, AWS Lambda is hightly available by default because it uses all Availability Zones (Re-architecture). 
 > While a single server would be enough for the Rehost and Replatform solution, we will calculate the price with 3 instances and a load balancer to have the same level of availability.
 
+>[!WARNING]
+> General Assumptions
+> 
+> - 500GB Traffic / Month (10% Write: 50GB)
+> - App will be used in Europe and USA (50:50)
+
 >[!NOTE]
 > Some general criteria apply to all migration strategies
 > - Deployment Model (Public Cloud)
@@ -83,5 +89,49 @@ Migrate the local version of the application to the AWS Cloud.
     - **Capacity Planning**: _Doesn't apply, not possible_
     - **Maintenance / Patching**: We need to keep the instance up-to-date
 - **Risk of Lock-In**: None, we can launch the Docker Compose Stack on any Linux VM
+
+### Replatforming
+
+- IaaS/PaaS
+- Frontend
+    - Use S3 and CloudFront to deliver the static website
+    - No more nginx container
+- Backend
+    - Host Container with AWS ECS
+    - Load Balancer for Scaling
+- Database
+    - Use the DynamoDB Web Service
+        - Autoscaling
+    - No more database container
+
+![Replatform Architecture Diagram](assets/migration-replatform.svg)
+
+- **Sclalability and Fit-to-Workload**
+    - S3, DynamoDB, and ELB scale automatically
+    - We can run multiple containers on one host
+    - We can scale the container hosts
+    - We can scale with the load
+- **Availability**
+    - S3, DynamoDB, and ELB are highly available by default 
+    - Multiple Container Hosts with multiple containers
+        - Instances can be spread across different Availability Zones for high availability
+        - Instances and Containers can be updated using rolling updates for zero downtime
+- **Security**:
+    - Container Hosts are not available publically (only via ELB)
+    - **In Transit**: CloudFront-Traffic is HTTPS Encrypted
+    - **At Rest**
+        - DynamoDB is encrypted by default ([AWS Docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html))
+        - S3 is encrypted by default ([AWS Docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/serv-side-encryption.html))
+- **Cost (Infrastructure)**: 174,05 USD / Month
+- **Operational Model**:
+    - **Capacity Planning**: Container Hosts and Containers can scale automatically
+    - **Maintenance / Patching**: Patch ECS Hosts
+        - Rolling updates possible for zero-downtime udpates
+- **Risk of Lock-In**: Yes, a bit
+    - CloudFront is optional
+    - S3: There are S3-compatible services 
+    - Container Hosting: No real lock-in, but when moving away we need to do more management ourselves 
+    - DynamoDB: Biggest lock-in factor here
+        - There are DDB-compatible alternatives however
 
 
