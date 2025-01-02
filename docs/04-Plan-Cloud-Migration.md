@@ -134,4 +134,36 @@ Migrate the local version of the application to the AWS Cloud.
     - DynamoDB: Biggest lock-in factor here
         - There are DDB-compatible alternatives however
 
+### Refactor / Re-architecting
+
+- FaaS/Serverless
+- Frontend: Like [Replatforming](#replatforming)
+- Backend
+    - Serverless backend with AWS Lambda
+    - API Gateway to expose the Lambda Function(s)
+    - Logs are stored in AWS CloudWatch
+- Database: Like [Replatforming](#replatforming)
+
+![Re-architect Architecture Diagram](assets/migration-rearchitect.svg)
+
+- **Sclalability and Fit-to-Workload**
+    - All Services scale fully automatic
+    - Scale to zero with AWS Lambda: No idle costs
+    - Perfect for our expected peaks, scale to zero possible
+- **Availability**
+    - All Services are highly available by default
+- **Security**:
+    - No server that can be attacked, only short-lived Lambda Functions
+    - **In Transit**: CloudFront-Traffic is HTTPS Encrypted
+    - **At Rest**
+        - DynamoDB is encrypted by default ([AWS Docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/EncryptionAtRest.html))
+        - S3 is encrypted by default ([AWS Docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/serv-side-encryption.html))
+- **Cost (Infrastructure)**: 87,43 USD / Month
+- **Operational Model**:
+    - **Capacity Planning**: All services scale automatically
+    - **Maintenance / Patching**
+        - No patching of servers required because there aren't any ones
+- **Risk of Lock-In**: Yes, high
+    - Solution uses only AWS Services
+
 
