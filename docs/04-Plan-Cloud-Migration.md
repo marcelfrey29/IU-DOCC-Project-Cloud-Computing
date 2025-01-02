@@ -56,4 +56,32 @@ Migrate the local version of the application to the AWS Cloud.
 
 **Retire**, **Retain**, and **Repurchasing** are not allowed for this project. 😅
 
+### Rehosting
+
+- IaaS
+- Use a single EC2 Virtual Machine, install Docker, and run the Compose Stack
+    - _We continue with our own database container (DynamoDB Local is not for production, but there are DDB-compatible databases that could be used)_
+    - General Prupose Instance with AWS Gravition (`t4g`), 4vCPUs, 16GB Memory
+    - 128GB Storage (DB Data are stored on this instance)
+    - Hourly EBS Snapshots (we assume that ­2GB of data change per hour: DB+Logs)
+    - 500GB of data are transferred to the internet
+- Scaling doesn't work out of the box because the database is part of the compose stack
+- Data are stoed on the public-facing EC2 Instance
+
+![Rehost Architecture Diagram](assets/migration-rehost.svg)
+
+- **Sclalability and Fit-to-Workload**:
+    - Scaling is not possible out of the box (DB must be shared and can't be part of the stack)
+    - We have only a single instance all the time
+- **Availability**: Single host is single point of failure, no redundancy 
+- **Security**:
+    - Database/Data on public facting instance (compromised host, compromised data)
+    - **In Transit**: TLS Certificate can be added to nginx, e.g. via Let's Encrypt (Manual Work)
+    - **At Rest**: Usage of encrypted EC2 Volume is possible
+- **Cost (Infrastructure)**: 206,04 USD / Month
+- **Operational Model**:
+    - **Capacity Planning**: _Doesn't apply, not possible_
+    - **Maintenance / Patching**: We need to keep the instance up-to-date
+- **Risk of Lock-In**: None, we can launch the Docker Compose Stack on any Linux VM
+
 
