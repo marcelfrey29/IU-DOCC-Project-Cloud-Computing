@@ -2,6 +2,8 @@
 
 ## Requirements
 
+[Local Implementation GitHub Milestone](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/milestone/1?closed=1)
+
 To develop the inital, local version of the web app, requirements have been defined as User Stories as described in the [Requirements Documentation](02-Requirements.md).
 
 Tasks:

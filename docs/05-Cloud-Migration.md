@@ -23,3 +23,18 @@
 > - X-Ray: 100.000 Traces
 
 ![Cloud Architecture](assets/architecture-cloud.svg)
+
+## Requirements
+
+[Cloud Migration GitHub Milestone](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/milestone/2)
+
+Tasks:
+
+- #72
+- #73
+- #74
+- #75
+
+## Implementation
+
+- TODO
