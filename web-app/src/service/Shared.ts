@@ -1,3 +1,5 @@
+export const apiBaseUrl = "http://localhost:9090";
+
 /**
  * A location of a Travel Guide or Activity.
  */

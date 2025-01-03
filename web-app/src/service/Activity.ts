@@ -1,4 +1,10 @@
-import { Category, Location, NotFoundError, UnauthorizedError } from "./Shared";
+import {
+    apiBaseUrl,
+    Category,
+    Location,
+    NotFoundError,
+    UnauthorizedError,
+} from "./Shared";
 
 /**
  * An Activity is one element of a Travel Guide.
@@ -23,7 +29,7 @@ export async function createActivity(
     secret: string,
 ): Promise<Activity[]> {
     const response = await fetch(
-        "http://localhost:9090/travel-guides/" + travelGuideId + "/activities",
+        apiBaseUrl + "/travel-guides/" + travelGuideId + "/activities",
         {
             method: "POST",
             headers: new Headers({
@@ -47,7 +53,8 @@ export async function updateActivity(
     secret: string,
 ): Promise<Activity[]> {
     const response = await fetch(
-        "http://localhost:9090/travel-guides/" +
+        apiBaseUrl +
+            "/travel-guides/" +
             travelGuideId +
             "/activities/" +
             activityId,
@@ -78,7 +85,7 @@ export async function getActivities(
     secret?: string,
 ): Promise<Activity[]> {
     const response = await fetch(
-        "http://localhost:9090/travel-guides/" + travelGuideId + "/activities",
+        apiBaseUrl + "/travel-guides/" + travelGuideId + "/activities",
         {
             method: "GET",
             headers: new Headers({
@@ -100,7 +107,8 @@ export async function deleteActivity(
     secret: string,
 ): Promise<Activity[]> {
     const response = await fetch(
-        "http://localhost:9090/travel-guides/" +
+        apiBaseUrl +
+            "/travel-guides/" +
             travelGuideId +
             "/activities/" +
             activityId,
