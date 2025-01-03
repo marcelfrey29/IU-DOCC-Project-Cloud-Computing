@@ -120,3 +120,10 @@ cfn-lint cloudformation/template.yaml
 # Upload Lambda Code to S3 and Deploy it
 ./deploy-backend.sh
 ```
+
+### Delete AWS Resources
+
+```bash
+# Delete 
+./delete-stack.sh
+```
