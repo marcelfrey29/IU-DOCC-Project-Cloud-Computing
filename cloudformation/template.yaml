@@ -69,6 +69,11 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: ""
             OriginAccessControlId: !GetAtt OAC.Id
+          - DomainName:
+              !Join ["", !Split ["https://", !GetAtt ApiGateway.ApiEndpoint]]
+            Id: API
+            CustomOriginConfig:
+              OriginProtocolPolicy: match-viewer
         DefaultCacheBehavior:
           TargetOriginId: WebApp
           AllowedMethods:
@@ -79,11 +84,22 @@ Resources:
             - PATCH
             - POST
             - PUT
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Cache Disabled (AWS-Managed)
           ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: API
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Cache Disabled (AWS-Managed)
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # All Viewer Except Host (AWS-Managed) - Required for API Gateway
+            ViewerProtocolPolicy: redirect-to-https
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
         # Add support for SPA
