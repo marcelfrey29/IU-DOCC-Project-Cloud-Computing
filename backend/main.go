@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	"errors"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	fiberadapter "github.com/awslabs/aws-lambda-go-api-proxy/fiber"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
@@ -15,15 +19,26 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var fiberLambda *fiberadapter.FiberLambda
 var logger, _ = zap.NewProduction()
 var validate *validator.Validate
 
-//var logger *zap.Logger
-
 func main() {
+	lambda.Start(Handler)
+}
+
+// Handler will deal with Fiber working with Lambda
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	return fiberLambda.ProxyWithContextV2(ctx, req)
+}
+
+// Setup Fiber for Lambda
+func init() {
 	validate = validator.New(validator.WithRequiredStructEnabled())
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
+
+	logger.Info("Cold Start.")
 
 	app := fiber.New()
 	app.Use(requestid.New())
@@ -34,12 +49,8 @@ func main() {
 	app.Use(healthcheck.New())
 	app.Use(helmet.New())
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
 	// Get Travel Guides
-	app.Get("/travel-guides", func(c *fiber.Ctx) error {
+	app.Get("/api/travel-guides", func(c *fiber.Ctx) error {
 		tgs, err := getTravelGuides()
 		if err != nil {
 			logger.Error("Error while getting Travel Guides.", zap.String("error", err.Error()))
@@ -50,7 +61,7 @@ func main() {
 	})
 
 	// Get a Travel Guide
-	app.Get("/travel-guides/:id", func(c *fiber.Ctx) error {
+	app.Get("/api/travel-guides/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -72,7 +83,7 @@ func main() {
 	})
 
 	// Update a Travel Guide
-	app.Put("/travel-guides/:id", func(c *fiber.Ctx) error {
+	app.Put("/api/travel-guides/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		auth := c.Get("x-tg-secret")
 		data := new(UpdateTravelGuideRequest)
@@ -104,7 +115,7 @@ func main() {
 	})
 
 	// Create a new Travel Guide
-	app.Post("/travel-guides", func(c *fiber.Ctx) error {
+	app.Post("/api/travel-guides", func(c *fiber.Ctx) error {
 		data := new(CreateTravelGuideRequest)
 		err := c.BodyParser(data)
 		if err != nil {
@@ -126,7 +137,7 @@ func main() {
 	})
 
 	// Delete a Travel Guide
-	app.Delete("/travel-guides/:id", func(c *fiber.Ctx) error {
+	app.Delete("/api/travel-guides/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -152,7 +163,7 @@ func main() {
 	})
 
 	// Create an Activity in a Travel Guide.
-	app.Get("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+	app.Get("/api/travel-guides/:id/activities", func(c *fiber.Ctx) error {
 		tgId := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -174,7 +185,7 @@ func main() {
 	})
 
 	// Create an Activity in a Travel Guide.
-	app.Post("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+	app.Post("/api/travel-guides/:id/activities", func(c *fiber.Ctx) error {
 		tgId := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -214,7 +225,7 @@ func main() {
 	})
 
 	// Update an Activity in a Travel Guide.
-	app.Put("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
+	app.Put("/api/travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
 		tgId := c.Params("tgid")
 		actId := c.Params("actId")
 		auth := c.Get("x-tg-secret")
@@ -255,7 +266,7 @@ func main() {
 	})
 
 	// Delete an Activity from a Travel Guide.
-	app.Delete("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
+	app.Delete("/api/travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
 		tgId := c.Params("tgId")
 		actId := c.Params("actId")
 		auth := c.Get("x-tg-secret")
@@ -285,11 +296,7 @@ func main() {
 		return c.Status(200).JSON(activities)
 	})
 
-	app.Get("/:name", func(c *fiber.Ctx) error {
-		return c.SendString("Hello " + c.Params("name"))
-	})
-
-	app.Listen(":3000")
+	fiberLambda = fiberadapter.New(app)
 }
 
 // Get all Travel Guides.

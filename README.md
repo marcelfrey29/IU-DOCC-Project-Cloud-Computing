@@ -111,6 +111,12 @@ cfn-lint cloudformation/template.yaml
 ### Application Deployment
 
 ```bash
+# Update Everything
+./update.sh
+
 # Deploy Web App
 ./deploy-web-app.sh
+
+# Upload Lambda Code to S3 and Deploy it
+./deploy-backend.sh
 ```

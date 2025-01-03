@@ -138,3 +138,10 @@ dist
 
 # DynamoDB Local Storage
 .storage/dynamodb
+
+# Go Binaries
+backend/backend
+backend/bootstrap
+
+# Lambda Deployment Files
+*.zip

@@ -18,6 +18,8 @@ Resources:
         - AttributeName: rangeId
           KeyType: RANGE
 
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
   WebAppBucket:
     Type: AWS::S3::Bucket
   BucketPolicy:
@@ -67,6 +69,11 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: ""
             OriginAccessControlId: !GetAtt OAC.Id
+          - DomainName:
+              !Join ["", !Split ["https://", !GetAtt ApiGateway.ApiEndpoint]]
+            Id: API
+            CustomOriginConfig:
+              OriginProtocolPolicy: match-viewer
         DefaultCacheBehavior:
           TargetOriginId: WebApp
           AllowedMethods:
@@ -77,11 +84,22 @@ Resources:
             - PATCH
             - POST
             - PUT
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Cache Disabled (AWS-Managed)
           ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - PathPattern: /api/*
+            TargetOriginId: API
+            AllowedMethods:
+              - DELETE
+              - GET
+              - HEAD
+              - OPTIONS
+              - PATCH
+              - POST
+              - PUT
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Cache Disabled (AWS-Managed)
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # All Viewer Except Host (AWS-Managed) - Required for API Gateway
+            ViewerProtocolPolicy: redirect-to-https
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
         # Add support for SPA
@@ -94,7 +112,82 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
 
+  ApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: TravelGuidesApi
+      Description: Travel Guides API Gateway
+      ProtocolType: HTTP
+      Target: !GetAtt BackendLambda.Arn
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref BackendLambda
+      Principal: "apigateway.amazonaws.com"
+  BackendLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "TravelGuides-Backend"
+      Description: "Backend for Travel Guides"
+      Runtime: provided.al2023
+      Architectures:
+        - arm64
+      Handler: bootstrap
+      Timeout: 10
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: lambda-handler.zip
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_TRAVEL_GUIDES: !Ref TravelGuides
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: TRACE
+        SystemLogLevel: INFO
+        LogGroup: !Ref BackendLogs
+  BackendLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: BackendLogs
+      RetentionInDays: 3
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        # Trust Policy
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        # Logs, S3 Code Access (AWS-Managed)
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+      Policies:
+        - PolicyName: "dynamodb-access"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Sid: AllowDynamoDBAccess
+                Action:
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:Query"
+                  - "dynamodb:DeleteItem"
+                Resource: !GetAtt TravelGuides.Arn
+
 Outputs:
+  DeploymentBucketName:
+    Description: The name of the S3 Bucket that contains the Lambda Code
+    Value: !Ref DeploymentBucket
+  BackendLambdaName:
+    Description: The name of the Lambda Function
+    Value: !Ref BackendLambda
   WebAppBucketName:
     Description: The name of the S3 Bucket that hosts the Web App
     Value: !Ref WebAppBucket
