@@ -185,6 +185,9 @@ Outputs:
   DeploymentBucketName:
     Description: The name of the S3 Bucket that contains the Lambda Code
     Value: !Ref DeploymentBucket
+  BackendLambdaName:
+    Description: The name of the Lambda Function
+    Value: !Ref BackendLambda
   WebAppBucketName:
     Description: The name of the S3 Bucket that hosts the Web App
     Value: !Ref WebAppBucket
