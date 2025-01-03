@@ -17,3 +17,9 @@ Resources:
           KeyType: HASH
         - AttributeName: rangeId
           KeyType: RANGE
+  WebAppBucket:
+    Type: AWS::S3::Bucket
+Outputs:
+  WebAppBucketName:
+    Description: The name of the S3 Bucket that hosts the Web App
+    Value: !Ref WebAppBucket
