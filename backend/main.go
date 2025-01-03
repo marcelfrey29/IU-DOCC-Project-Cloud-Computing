@@ -49,10 +49,6 @@ func init() {
 	app.Use(healthcheck.New())
 	app.Use(helmet.New())
 
-	app.Get("/api/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
 	// Get Travel Guides
 	app.Get("/api/travel-guides", func(c *fiber.Ctx) error {
 		tgs, err := getTravelGuides()
@@ -298,10 +294,6 @@ func init() {
 		}
 		logger.Info("Got all Activities of Travel Guide.")
 		return c.Status(200).JSON(activities)
-	})
-
-	app.Get("/api/:name", func(c *fiber.Ctx) error {
-		return c.SendString("Hello " + c.Params("name"))
 	})
 
 	fiberLambda = fiberadapter.New(app)
