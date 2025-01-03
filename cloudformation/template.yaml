@@ -96,6 +96,62 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
 
+  BackendLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: "TravelGuides-Backend"
+      Description: "Backend for Travel Guides"
+      Runtime: provided.al2023
+      Architectures:
+        - arm64
+      Handler: bootstrap
+      Timeout: 10
+      MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: lambda-handler.zip
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_TRAVEL_GUIDES: !Ref TravelGuides
+      LoggingConfig:
+        LogFormat: JSON
+        ApplicationLogLevel: TRACE
+        SystemLogLevel: INFO
+        LogGroup: !Ref BackendLogs
+  BackendLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: BackendLogs
+      RetentionInDays: 3
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        # Trust Policy
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        # Logs, S3 Code Access (AWS-Managed)
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+      Policies:
+        - PolicyName: "dynamodb-access"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Sid: AllowDynamoDBAccess
+                Action:
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:Query"
+                  - "dynamodb:DeleteItem"
+                Resource: !GetAtt TravelGuides.Arn
+
 Outputs:
   DeploymentBucketName:
     Description: The name of the S3 Bucket that contains the Lambda Code
