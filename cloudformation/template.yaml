@@ -17,3 +17,87 @@ Resources:
           KeyType: HASH
         - AttributeName: rangeId
           KeyType: RANGE
+
+  WebAppBucket:
+    Type: AWS::S3::Bucket
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebAppBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Sid: AllowCloudFrontAccess
+            Principal:
+              Service: "cloudfront.amazonaws.com"
+            Action: "s3:GetObject"
+            Resource: !Join ["", [!GetAtt WebAppBucket.Arn, "/*"]]
+            Condition:
+              StringEquals:
+                AWS:SourceArn:
+                  !Join [
+                    "",
+                    [
+                      !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/",
+                      !GetAtt TravelGuidesDistribution.Id,
+                    ],
+                  ]
+
+  # Origin Access Identity (OAI) is Legacy, so we use the OAC
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: CloudFront S3 Web App Access
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  TravelGuidesDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: Travel Guides Web App
+        Enabled: true
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Origins:
+          - DomainName: !GetAtt WebAppBucket.DomainName
+            Id: WebApp
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt OAC.Id
+        DefaultCacheBehavior:
+          TargetOriginId: WebApp
+          AllowedMethods:
+            - DELETE
+            - GET
+            - HEAD
+            - OPTIONS
+            - PATCH
+            - POST
+            - PUT
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        # Add support for SPA
+        # If the path ("the file") doesn't exist in S3, 403 is returned.
+        # Because we have client-site routing, we always want to return the index.html file.
+        # 404 errors are handled on the client side.
+        # This way, deep URLs can be opened (e.g. "/travel-guides").
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
+Outputs:
+  WebAppBucketName:
+    Description: The name of the S3 Bucket that hosts the Web App
+    Value: !Ref WebAppBucket
+  WebAppUrl:
+    Description: The URL of the Web App
+    Value: !GetAtt TravelGuidesDistribution.DomainName

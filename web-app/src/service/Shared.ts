@@ -1,3 +1,5 @@
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 /**
  * A location of a Travel Guide or Activity.
  */
