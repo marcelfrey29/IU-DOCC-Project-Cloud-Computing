@@ -18,6 +18,8 @@ Resources:
         - AttributeName: rangeId
           KeyType: RANGE
 
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
   WebAppBucket:
     Type: AWS::S3::Bucket
   BucketPolicy:
@@ -95,6 +97,9 @@ Resources:
             ResponsePagePath: /index.html
 
 Outputs:
+  DeploymentBucketName:
+    Description: The name of the S3 Bucket that contains the Lambda Code
+    Value: !Ref DeploymentBucket
   WebAppBucketName:
     Description: The name of the S3 Bucket that hosts the Web App
     Value: !Ref WebAppBucket
