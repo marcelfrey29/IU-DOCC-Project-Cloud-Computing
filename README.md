@@ -2,8 +2,8 @@
 
 [![Node.js CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-node.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-node.yml)
 [![Go CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml)
-[![CFN-Lint](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/cfn-lint.yml/badge.svg)](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/cfn-lint.yml)
-[![SAST](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml/badge.svg)](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml)
+[![CFN-Lint](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/cfn-lint.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/cfn-lint.yml)
+[![SAST](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/sast.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/workflows/sast.yml)
 
 ## Travel Guides
 
@@ -34,7 +34,7 @@ See [Docs](docs/docs.md)
     - The AWS CLI must be configured with real credentials
 - [AWS CloudFormation Linter](https://github.com/aws-cloudformation/cfn-lint) (Optional)
 
-## Running the Project
+## Running the Project Locally
 
 All services can be managed at once via Docker Compose.
 
@@ -87,8 +87,30 @@ Expected Output:
 }
 ```
 
-### CloudFormation Linting
+## Running the Project on AWS
+
+### Infrastructure Deployment
 
 ```bash
+# First-Time Stack Creation (One-Time!)
+./create-stack.sh
+
+# Stack Updates
+./update-stack.sh
+
+# Stack Details
+aws cloudformation describe-stacks --stack-name TravelGuides
+
+# Access Outputs
+aws cloudformation describe-stacks --stack-name TravelGuides --query 'Stacks[0].Outputs[?OutputKey==`WebAppBucketName`].OutputValue' --output text
+
+# Run Linter
 cfn-lint cloudformation/template.yaml
+```
+
+### Application Deployment
+
+```bash
+# Deploy Web App
+./deploy-web-app.sh
 ```
