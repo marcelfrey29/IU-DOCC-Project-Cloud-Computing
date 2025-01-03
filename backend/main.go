@@ -49,12 +49,12 @@ func init() {
 	app.Use(healthcheck.New())
 	app.Use(helmet.New())
 
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/api/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
 
 	// Get Travel Guides
-	app.Get("/travel-guides", func(c *fiber.Ctx) error {
+	app.Get("/api/travel-guides", func(c *fiber.Ctx) error {
 		tgs, err := getTravelGuides()
 		if err != nil {
 			logger.Error("Error while getting Travel Guides.", zap.String("error", err.Error()))
@@ -65,7 +65,7 @@ func init() {
 	})
 
 	// Get a Travel Guide
-	app.Get("/travel-guides/:id", func(c *fiber.Ctx) error {
+	app.Get("/api/travel-guides/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -87,7 +87,7 @@ func init() {
 	})
 
 	// Update a Travel Guide
-	app.Put("/travel-guides/:id", func(c *fiber.Ctx) error {
+	app.Put("/api/travel-guides/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		auth := c.Get("x-tg-secret")
 		data := new(UpdateTravelGuideRequest)
@@ -119,7 +119,7 @@ func init() {
 	})
 
 	// Create a new Travel Guide
-	app.Post("/travel-guides", func(c *fiber.Ctx) error {
+	app.Post("/api/travel-guides", func(c *fiber.Ctx) error {
 		data := new(CreateTravelGuideRequest)
 		err := c.BodyParser(data)
 		if err != nil {
@@ -141,7 +141,7 @@ func init() {
 	})
 
 	// Delete a Travel Guide
-	app.Delete("/travel-guides/:id", func(c *fiber.Ctx) error {
+	app.Delete("/api/travel-guides/:id", func(c *fiber.Ctx) error {
 		id := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -167,7 +167,7 @@ func init() {
 	})
 
 	// Create an Activity in a Travel Guide.
-	app.Get("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+	app.Get("/api/travel-guides/:id/activities", func(c *fiber.Ctx) error {
 		tgId := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -189,7 +189,7 @@ func init() {
 	})
 
 	// Create an Activity in a Travel Guide.
-	app.Post("travel-guides/:id/activities", func(c *fiber.Ctx) error {
+	app.Post("/api/travel-guides/:id/activities", func(c *fiber.Ctx) error {
 		tgId := c.Params("id")
 		auth := c.Get("x-tg-secret")
 
@@ -229,7 +229,7 @@ func init() {
 	})
 
 	// Update an Activity in a Travel Guide.
-	app.Put("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
+	app.Put("/api/travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
 		tgId := c.Params("tgid")
 		actId := c.Params("actId")
 		auth := c.Get("x-tg-secret")
@@ -270,7 +270,7 @@ func init() {
 	})
 
 	// Delete an Activity from a Travel Guide.
-	app.Delete("travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
+	app.Delete("/api/travel-guides/:tgId/activities/:actId", func(c *fiber.Ctx) error {
 		tgId := c.Params("tgId")
 		actId := c.Params("actId")
 		auth := c.Get("x-tg-secret")
@@ -300,7 +300,7 @@ func init() {
 		return c.Status(200).JSON(activities)
 	})
 
-	app.Get("/:name", func(c *fiber.Ctx) error {
+	app.Get("/api/:name", func(c *fiber.Ctx) error {
 		return c.SendString("Hello " + c.Params("name"))
 	})
 
