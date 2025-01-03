@@ -96,6 +96,19 @@ Resources:
             ResponseCode: 200
             ResponsePagePath: /index.html
 
+  ApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: TravelGuidesApi
+      Description: Travel Guides API Gateway
+      ProtocolType: HTTP
+      Target: !GetAtt BackendLambda.Arn
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref BackendLambda
+      Principal: "apigateway.amazonaws.com"
   BackendLambda:
     Type: AWS::Lambda::Function
     Properties:

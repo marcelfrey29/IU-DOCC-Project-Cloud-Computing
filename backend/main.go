@@ -28,8 +28,8 @@ func main() {
 }
 
 // Handler will deal with Fiber working with Lambda
-func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return fiberLambda.ProxyWithContext(ctx, req)
+func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	return fiberLambda.ProxyWithContextV2(ctx, req)
 }
 
 // Setup Fiber for Lambda
