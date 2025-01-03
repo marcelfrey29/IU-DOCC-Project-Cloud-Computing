@@ -2,6 +2,7 @@
 
 [![Node.js CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-node.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-node.yml)
 [![Go CI](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml/badge.svg)](https://github.com/marcelfrey29/IU-DOCC-Project-Cloud-Computing/actions/workflows/ci-go.yml)
+[![CFN-Lint](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/cfn-lint.yml/badge.svg)](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/cfn-lint.yml)
 [![SAST](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml/badge.svg)](https://github.com/marcelfrey29/marcelfrey29.github.io/actions/workflows/sast.yml)
 
 ## Travel Guides
@@ -29,6 +30,9 @@ See [Docs](docs/docs.md)
     - Run SAST with `bearer scan .` in project root
 - [Bruno](https://www.usebruno.com/) (Optional) as HTTP Client
     - Collection with Assertions is located in `tools/bruno`
+- AWS Account (To deploy the Cloud Version of the Application)
+    - The AWS CLI must be configured with real credentials
+- [AWS CloudFormation Linter](https://github.com/aws-cloudformation/cfn-lint) (Optional)
 
 ## Running the Project
 
@@ -81,4 +85,10 @@ Expected Output:
         "TravelGuides"
     ]
 }
+```
+
+### CloudFormation Linting
+
+```bash
+cfn-lint cloudformation/template.yaml
 ```
