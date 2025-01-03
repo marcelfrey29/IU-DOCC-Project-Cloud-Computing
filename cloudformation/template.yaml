@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Travel Guides Application
+Resources:
+  TravelGuides:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      AttributeDefinitions:
+        - AttributeName: hashId
+          AttributeType: S
+        - AttributeName: rangeId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: hashId
+          KeyType: HASH
+        - AttributeName: rangeId
+          KeyType: RANGE
