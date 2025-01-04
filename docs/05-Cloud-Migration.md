@@ -95,3 +95,28 @@ Tasks:
 
 ![Final AWS Application Compose Architecture](assets/application-composer-final.png)
 
+## Learnings / Notes
+
+### CloudFormation
+
+- Automatic rollback to previous state on update-failure is great!
+    - Terraform CLI (`terraform apply`) doesn't do that
+- CloudFormation can be visualized with Application Composer
+    - The Terraform State can be visualized, but this is not very helpful
+- CloudFormation has more direct connections between resources
+    - Direct Reference from A to B: `A -> B`
+    - Terraform often has an intermedie Resource (e.g. some kind of `Attachment` that connects A and B): `A <- Attachment -> B`
+- CloudFormation doesn't give up... and tries things for quite a long time
+    - Terraform fails faster which speeds up the feedback-loop (Personal experience, not measured)
+    - Terraform has options to don't wait (e.g. when CloudFront Distributions are deployed which can take some time)
+- CloudFormation adds random identifiers to all resource-names
+    - Name-conflicts are very unlikely, but you can't rely on names (e.g. find by name)
+- Sometimes the error messages are helpful, sometimes not - just like with Terraform
+
+### Application
+
+- UX can be improved
+    - Currently there are no loading indicators (pages, buttons)
+        - While latency was belog 1s at all time (cloud version), cold starts are noticeable 
+        - 
+    - The "Travel Guide is Private" screen is shown until the data are loaded...
