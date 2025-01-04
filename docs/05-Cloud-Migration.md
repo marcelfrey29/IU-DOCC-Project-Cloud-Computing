@@ -73,4 +73,25 @@ Tasks:
 - Add script for cleanup of all AWS Ressources 
     - Empty buckets and delete Stack
 
-- TODO
+## Implementation Notes
+
+- Implementation is not "Serverless-Native"
+- Single Function that runs a full web-framework instead of many small Lambda Functions
+    - Overhead due to the web-framework (increases cold-start times)
+    - But we still benefit from all scaling and availability advantages
+- API Gateway as Proxy
+    - All requests to the API are forwarded to the Lambda
+    - No use of 404-handling, validation, etc.
+- No AutoScaling for DynamoDB (_intended as described ealier_)
+- No Backup/Recovery for DynamoDB (_intended as described ealier_)
+
+## AWS Application Composer
+
+- Visualize CloudFormation Templates and edit them via drag-and-drop and UI-Editor (No YAML)
+    - Used only for visualization
+    - CFN was written in YAML
+- Not every connection between services is shown (e.g. CloudFront -> API Gateway)
+- Tooling is visualized (e.g. Lambda <- S3 Deployment Bucket)
+
+![Final AWS Application Compose Architecture](assets/application-composer-final.png)
+
