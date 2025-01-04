@@ -69,6 +69,7 @@ Migrate the local version of the application to the AWS Cloud.
         - A few cloud optimizations are performed
     - **Refactoring/Re-architecting**
         - Use cloud-native features
+- Pricing: [AWS Pricing Calculator](https://calculator.aws/#/)
 
 ## Possible Migration Strategies
 

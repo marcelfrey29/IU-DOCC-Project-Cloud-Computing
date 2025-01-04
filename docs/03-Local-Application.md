@@ -123,3 +123,20 @@ Simple mockups for the User Interface.
         - Before: Embedded in List Page
         - Create/Update is mostly the same (except a few label names, prefill on update, and the method to be called)
         - Control via Property
+
+## Result
+
+Homepage:
+![](assets/result-home.png)
+
+Create a new Travel Guide:
+![](assets/result-create-tg.png)
+
+List of Travel Guides:
+![](assets/result-tg-list.png)
+
+Travel Guide Details with Activities:
+![](assets/result-tg-details.png)
+
+Dark Mode:
+![](assets/result-darkmode.png)
