@@ -291,7 +291,7 @@ export default function TravelGuideDetailPage() {
                                                 onPress={onOpen}
                                             >
                                                 <BootstrapIcon name="trash-fill"></BootstrapIcon>
-                                                Create Travel Guide
+                                                Delete Travel Guide
                                             </Button>
 
                                             {/* Delete Travel Guide Modal */}
