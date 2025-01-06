@@ -11,7 +11,7 @@ require (
 	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gofiber/contrib/fiberzap/v2 v2.1.4
-	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/google/uuid v1.6.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.31.0
