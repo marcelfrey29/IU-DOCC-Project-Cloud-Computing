@@ -38,7 +38,7 @@
         "@nextui-org/system": "^2.4.5",
         "@nextui-org/table": "^2.2.7",
         "@nextui-org/theme": "^2.4.4",
-        "@react-aria/visually-hidden": "^3.8.18",
+        "@react-aria/visually-hidden": "^3.8.19",
         "bootstrap-icons": "^1.11.3",
         "clsx": "^2.1.1",
         "framer-motion": "^11.15.0",
